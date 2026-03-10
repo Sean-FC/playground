@@ -172,7 +172,7 @@ EOF
 }
 
 inputs = {
-  namespace                = "seanfc"
+  namespace                = ""
   bootstrap_state_location = "infra/bootstrap/terraform.tfstate"
   aws_state_location       = "infra/aws/terraform.tfstate"
 }
