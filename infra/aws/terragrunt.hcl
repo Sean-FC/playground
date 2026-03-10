@@ -31,6 +31,26 @@ variable "interface_endpoints" {
   type = list(string)
 }
 
+variable "k3s_enabled" {
+  type = bool
+}
+
+variable "k3s_version" {
+  type = string
+}
+
+variable "k3s_server_instance_type" {
+  type = string
+}
+
+variable "k3s_agent_count" {
+  type = number
+}
+
+variable "k3s_agent_instance_type" {
+  type = string
+}
+
 EOF
 }
 
@@ -43,4 +63,10 @@ inputs = {
 
   gateway_endpoints     = ["s3", "dynamodb"]
   interface_endpoints   = [] # ["kms"]
+
+  k3s_enabled                       = true
+  k3s_version                       = "v1.32.2+k3s1"
+  k3s_server_instance_type          = "t4g.small"
+  k3s_agent_count                   = 1
+  k3s_agent_instance_type           = "t4g.small"
 }
