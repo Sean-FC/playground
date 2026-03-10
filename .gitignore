@@ -368,7 +368,25 @@ zsdoc/data
 
 # End of https://www.toptal.com/developers/gitignore/api/python,helm,terragrunt,zsh,pycharm,macos
 
-# Adhoc feature engineering
+# Custom
+.idea
+*.swp
+
+**/.terraform.lock.hcl
+**/.terraform
+**/context.tf
+**/data.tf
+**/dependencies.tf
+**/extra_*.tf
+**/provider.tf
+**/sops.tf
+**/tg_backend.tf
+**/variables.tf
+
+# ignore symlinked secrets
+*/secrets.enc.yaml
+
+# adhoc feature engineering
 outputs/features/**
 outputs/models/**
 outputs/reports/**
