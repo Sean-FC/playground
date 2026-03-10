@@ -1,0 +1,64 @@
+#!/bin/bash
+set -euxo pipefail
+
+dnf update -y
+
+IMDS_TOKEN="$(curl -sX PUT "http://169.254.169.254/latest/api/token" \
+  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")"
+
+PRIVATE_IP="$(curl -sf -H "X-aws-ec2-metadata-token: $${IMDS_TOKEN}" \
+  http://169.254.169.254/latest/meta-data/local-ipv4)"
+PUBLIC_IP="$(curl -sf -H "X-aws-ec2-metadata-token: $${IMDS_TOKEN}" \
+  http://169.254.169.254/latest/meta-data/public-ipv4 || true)"
+
+STATE_DEVICE="${state_device}"
+STATE_MOUNT="/var/lib/rancher/k3s"
+
+for _ in $(seq 1 60); do
+  if [ -b "$${STATE_DEVICE}" ] || [ -b "/dev/nvme1n1" ]; then
+    break
+  fi
+  sleep 2
+done
+
+if [ ! -b "$${STATE_DEVICE}" ] && [ -b "/dev/nvme1n1" ]; then
+  STATE_DEVICE="/dev/nvme1n1"
+fi
+
+if [ ! -b "$${STATE_DEVICE}" ]; then
+  echo "state device not found" >&2
+  exit 1
+fi
+
+mkdir -p "$${STATE_MOUNT}"
+
+if ! blkid "$${STATE_DEVICE}" >/dev/null 2>&1; then
+  mkfs.ext4 -F "$${STATE_DEVICE}"
+fi
+
+mountpoint -q "$${STATE_MOUNT}" || mount "$${STATE_DEVICE}" "$${STATE_MOUNT}"
+
+UUID="$(blkid -s UUID -o value "$${STATE_DEVICE}")"
+grep -q "$${UUID}" /etc/fstab || echo "UUID=$${UUID} $${STATE_MOUNT} ext4 defaults,nofail 0 2" >> /etc/fstab
+
+mkdir -p /etc/rancher/k3s
+cat >/etc/rancher/k3s/config.yaml <<EOF
+write-kubeconfig-mode: "0644"
+token: "${token}"
+node-name: "${node_name}"
+node-ip: "$${PRIVATE_IP}"
+advertise-address: "$${PRIVATE_IP}"
+tls-san:
+  - "${api_endpoint}"
+EOF
+
+if [ -n "$${PUBLIC_IP}" ]; then
+  cat >>/etc/rancher/k3s/config.yaml <<EOF
+  - "$${PUBLIC_IP}"
+EOF
+fi
+
+curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --cluster-init" INSTALL_K3S_VERSION="${k3s_version}" sh -
+
+cp /etc/rancher/k3s/k3s.yaml /etc/rancher/k3s/k3s-remote.yaml
+sed -i "s/127.0.0.1/${api_endpoint}/" /etc/rancher/k3s/k3s-remote.yaml
