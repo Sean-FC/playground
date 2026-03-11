@@ -10,6 +10,7 @@ locals {
   k3s_agent_name         = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name, "agent"])
   k3s_state_volume_name  = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name, "state"])
   k3s_api_fqdn           = "${local.k3s_cluster_name}.${aws_route53_zone.stage.name}"
+  k3s_server_private_ip  = cidrhost(data.aws_subnet.k3s_server.cidr_block, 10)
   k3s_arch_to_ami = {
     arm64  = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64"
     x86_64 = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
@@ -140,6 +141,7 @@ resource "aws_instance" "k3s_server" {
   instance_type               = var.k3s_server_instance_type
   key_name                    = aws_key_pair.k3s[0].key_name
   subnet_id                   = local.k3s_server_subnet_id
+  private_ip                  = local.k3s_server_private_ip
   vpc_security_group_ids      = [aws_security_group.k3s[0].id, aws_security_group.default_ssh.id]
   iam_instance_profile        = aws_iam_instance_profile.k3s_node[0].name
   associate_public_ip_address = true
@@ -159,11 +161,14 @@ resource "aws_instance" "k3s_server" {
   }
 
   user_data = templatefile("${path.module}/templates/k3s-server-user-data.tftpl", {
-    api_endpoint = local.k3s_api_fqdn
-    k3s_version  = var.k3s_version
-    node_name    = local.k3s_server_name
-    state_device = "/dev/sdf"
-    token        = local.secrets_main.k3s.token
+    api_endpoint               = local.k3s_api_fqdn
+    k3s_version                = var.k3s_version
+    node_name                  = local.k3s_server_name
+    oidc_issuer_url            = "https://s3.${data.aws_region.current.region}.amazonaws.com/${aws_s3_bucket.k3s_oidc.bucket}"
+    sa_signer_private_key_pem  = local.secrets_main.k3s.sa_signer_private_key_pem
+    sa_signer_public_key_pkcs8 = local.secrets_main.k3s.sa_signer_public_key_pkcs8
+    state_device               = "/dev/sdf"
+    token                      = local.secrets_main.k3s.token
   })
 
   tags = merge(
@@ -230,7 +235,7 @@ resource "aws_instance" "k3s_agent" {
   user_data = templatefile("${path.module}/templates/k3s-agent-user-data.tftpl", {
     k3s_version = var.k3s_version
     node_name   = format("%s-%02d", local.k3s_agent_name, count.index + 1)
-    server_url  = "https://${aws_instance.k3s_server[0].private_ip}:6443"
+    server_url  = "https://${local.k3s_server_private_ip}:6443"
     token       = local.secrets_main.k3s.token
   })
 
@@ -241,6 +246,86 @@ resource "aws_instance" "k3s_agent" {
       Role = "k3s-agent"
     }
   )
+}
+
+# OIDC bucket
+resource "aws_s3_bucket" "k3s_oidc" {
+  bucket        = join(module.context.delimiter, ["seanfc", module.context.id, "k3s", "oidc"])
+  force_destroy = true
+  tags          = module.context.tags
+}
+
+resource "aws_s3_bucket_public_access_block" "k3s_oidc" {
+  bucket                  = aws_s3_bucket.k3s_oidc.id
+  block_public_acls       = true
+  ignore_public_acls      = true
+  block_public_policy     = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_versioning" "k3s_oidc" {
+  bucket = aws_s3_bucket.k3s_oidc.id
+  versioning_configuration {
+    status = "Disabled"
+  }
+}
+
+data "aws_iam_policy_document" "k3s_oidc_public_read" {
+  statement {
+    sid    = "AllowPublicReadOfOidcObjects"
+    effect = "Allow"
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+    actions = ["s3:GetObject"]
+    resources = [
+      "${aws_s3_bucket.k3s_oidc.arn}/*"
+    ]
+  }
+}
+
+resource "aws_s3_bucket_policy" "k3s_oidc_public_read" {
+  bucket = aws_s3_bucket.k3s_oidc.id
+  policy = data.aws_iam_policy_document.k3s_oidc_public_read.json
+}
+
+resource "aws_s3_object" "k3s_oidc_discovery" {
+  bucket = aws_s3_bucket.k3s_oidc.id
+  key    = ".well-known/openid-configuration"
+  content = templatefile("${path.module}/templates/k3s-oidc-discovery.json.tftpl", {
+    issuer_url = "https://s3.${data.aws_region.current.region}.amazonaws.com/${aws_s3_bucket.k3s_oidc.bucket}"
+    jwks_uri   = "https://s3.${data.aws_region.current.region}.amazonaws.com/${aws_s3_bucket.k3s_oidc.bucket}/keys.json"
+  })
+  content_type = "application/json"
+}
+
+resource "aws_s3_object" "k3s_oidc_jwks" {
+  bucket       = aws_s3_bucket.k3s_oidc.id
+  key          = "keys.json"
+  content      = local.secrets_main.k3s.oidc_jwks
+  content_type = "application/json"
+}
+
+data "tls_certificate" "k3s_oidc" {
+  url = "https://s3.${data.aws_region.current.region}.amazonaws.com/${aws_s3_bucket.k3s_oidc.bucket}"
+}
+
+resource "aws_iam_openid_connect_provider" "k3s" {
+  url = "https://s3.${data.aws_region.current.name}.amazonaws.com/${aws_s3_bucket.k3s_oidc.bucket}"
+  client_id_list = [
+    "sts.amazonaws.com",
+  ]
+  thumbprint_list = [
+    data.tls_certificate.k3s_oidc.certificates[0].sha1_fingerprint
+  ]
+  tags = module.context.tags
+  # Race; wait on objects being uploaded
+  depends_on = [
+    aws_s3_bucket_policy.k3s_oidc_public_read,
+    aws_s3_object.k3s_oidc_discovery,
+    aws_s3_object.k3s_oidc_jwks,
+  ]
 }
 
 output "k3s_api_endpoint" {

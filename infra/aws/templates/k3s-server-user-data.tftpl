@@ -10,6 +10,11 @@ PRIVATE_IP="$(curl -sf -H "X-aws-ec2-metadata-token: $${IMDS_TOKEN}" \
   http://169.254.169.254/latest/meta-data/local-ipv4)"
 PUBLIC_IP="$(curl -sf -H "X-aws-ec2-metadata-token: $${IMDS_TOKEN}" \
   http://169.254.169.254/latest/meta-data/public-ipv4 || true)"
+PUBLIC_IP_TLS_SAN=""
+
+if [ -n "$${PUBLIC_IP}" ]; then
+  PUBLIC_IP_TLS_SAN=$(printf '  - "%s"\n' "$${PUBLIC_IP}")
+fi
 
 STATE_DEVICE="${state_device}"
 STATE_MOUNT="/var/lib/rancher/k3s"
@@ -41,7 +46,19 @@ mountpoint -q "$${STATE_MOUNT}" || mount "$${STATE_DEVICE}" "$${STATE_MOUNT}"
 UUID="$(blkid -s UUID -o value "$${STATE_DEVICE}")"
 grep -q "$${UUID}" /etc/fstab || echo "UUID=$${UUID} $${STATE_MOUNT} ext4 defaults,nofail 0 2" >> /etc/fstab
 
-mkdir -p /etc/rancher/k3s
+mkdir -p /etc/rancher/k3s/tls
+
+cat >/etc/rancher/k3s/tls/sa-signer.key <<'EOF'
+${sa_signer_private_key_pem}
+EOF
+
+cat >/etc/rancher/k3s/tls/sa-signer-pkcs8.pub <<'EOF'
+${sa_signer_public_key_pkcs8}
+EOF
+
+chmod 600 /etc/rancher/k3s/tls/sa-signer.key
+chmod 644 /etc/rancher/k3s/tls/sa-signer-pkcs8.pub
+
 cat >/etc/rancher/k3s/config.yaml <<EOF
 write-kubeconfig-mode: "0644"
 token: "${token}"
@@ -50,13 +67,15 @@ node-ip: "$${PRIVATE_IP}"
 advertise-address: "$${PRIVATE_IP}"
 tls-san:
   - "${api_endpoint}"
+$${PUBLIC_IP_TLS_SAN}
+kube-apiserver-arg:
+  - "api-audiences=sts.amazonaws.com"
+  - "service-account-key-file=/etc/rancher/k3s/tls/sa-signer-pkcs8.pub"
+  - "service-account-key-file=/var/lib/rancher/k3s/server/tls/service.key" # prior key
+  - "service-account-signing-key-file=/etc/rancher/k3s/tls/sa-signer.key"
+  - "service-account-issuer=${oidc_issuer_url}"
+  - "service-account-issuer=k3s" # trust existing SA issued by k3s
 EOF
-
-if [ -n "$${PUBLIC_IP}" ]; then
-  cat >>/etc/rancher/k3s/config.yaml <<EOF
-  - "$${PUBLIC_IP}"
-EOF
-fi
 
 curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --cluster-init" INSTALL_K3S_VERSION="${k3s_version}" sh -
 
