@@ -67,6 +67,6 @@ inputs = {
   k3s_enabled                       = true
   k3s_version                       = "v1.32.2+k3s1"
   k3s_server_instance_type          = "t4g.small"
-  k3s_agent_count                   = 1
+  k3s_agent_count                   = 0
   k3s_agent_instance_type           = "t4g.small"
 }
