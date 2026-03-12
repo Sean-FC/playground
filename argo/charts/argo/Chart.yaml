@@ -1,0 +1,12 @@
+apiVersion: v2
+dependencies:
+  - name: argo-cd
+    repository: https://argoproj.github.io/argo-helm
+    version: 9.4.10
+  - name: argocd-image-updater
+    repository: https://argoproj.github.io/argo-helm
+    version: 1.1.1
+    condition: argocd-image-updater.enabled
+description: Helm chart managing Argo components
+name: argocd
+version: 0.0.1

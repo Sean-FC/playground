@@ -6,6 +6,19 @@ include "env" {
   path = find_in_parent_folders("root.hcl")
 }
 
+generate "extra_providers" {
+  path      = "extra_providers.tf"
+  if_exists = "overwrite_terragrunt"
+
+  contents = <<EOF
+provider "github" {
+  owner = "Sean-FC"
+  token = local.secrets_main.github.pat
+}
+
+EOF
+}
+
 generate "extras" {
   path      = "extra_variables.tf"
   if_exists = "overwrite_terragrunt"
