@@ -12,9 +12,18 @@ PRIVATE_IP="$(curl -sf -H "X-aws-ec2-metadata-token: $${IMDS_TOKEN}" \
 mkdir -p /etc/rancher/k3s
 cat >/etc/rancher/k3s/config.yaml <<EOF
 token: "${token}"
-server: "${server_url}"
+
+# Node settings
 node-name: "${node_name}"
+node-label:
+  - "environment=${env}"
+
+# Networking
+server: "${server_url}"
 node-ip: "$${PRIVATE_IP}"
+
+# Logging
+debug: false
 EOF
 
 curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent" INSTALL_K3S_VERSION="${k3s_version}" sh -

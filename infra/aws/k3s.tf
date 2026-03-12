@@ -162,6 +162,7 @@ resource "aws_instance" "k3s_server" {
 
   user_data = templatefile("${path.module}/templates/k3s-server-user-data.tftpl", {
     api_endpoint               = local.k3s_api_fqdn
+    env                        = module.context.stage
     k3s_version                = var.k3s_version
     node_name                  = local.k3s_server_name
     oidc_issuer_url            = "https://s3.${data.aws_region.current.region}.amazonaws.com/${aws_s3_bucket.k3s_oidc.bucket}"
@@ -233,6 +234,7 @@ resource "aws_instance" "k3s_agent" {
   }
 
   user_data = templatefile("${path.module}/templates/k3s-agent-user-data.tftpl", {
+    env         = module.context.stage
     k3s_version = var.k3s_version
     node_name   = format("%s-%02d", local.k3s_agent_name, count.index + 1)
     server_url  = "https://${local.k3s_server_private_ip}:6443"
@@ -312,7 +314,7 @@ data "tls_certificate" "k3s_oidc" {
 }
 
 resource "aws_iam_openid_connect_provider" "k3s" {
-  url = "https://s3.${data.aws_region.current.name}.amazonaws.com/${aws_s3_bucket.k3s_oidc.bucket}"
+  url = "https://s3.${data.aws_region.current.region}.amazonaws.com/${aws_s3_bucket.k3s_oidc.bucket}"
   client_id_list = [
     "sts.amazonaws.com",
   ]
