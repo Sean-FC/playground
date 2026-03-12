@@ -1,0 +1,72 @@
+argo-cd:
+  crds:
+    install: false
+  configs:
+    cm:
+      timeout.reconciliation: 30s
+    params:
+      server.insecure: true
+  controller:
+    replicas: 1
+  dex:
+    enabled: false
+  redis:
+    enabled: true
+  repoServer:
+    replicas: 1
+    extraArgs:
+      - --allow-oob-symlinks
+  applicationSet:
+    replicas: 1
+  notifications:
+    enabled: false
+  server:
+    replicas: 1
+    service:
+      type: ClusterIP
+    ingress:
+      enabled: false
+  extraObjects:
+    - apiVersion: argoproj.io/v1alpha1
+      kind: AppProject
+      metadata:
+        name: core
+        namespace: argo
+      spec:
+        clusterResourceWhitelist:
+          - group: "*"
+            kind: "*"
+        destinations:
+          - namespace: "*"
+            server: https://kubernetes.default.svc
+        sourceRepos:
+          - "*"
+    - apiVersion: argoproj.io/v1alpha1
+      kind: AppProject
+      metadata:
+        name: apps # Simple split for now of 'core' charts + 'apps'
+        namespace: argo
+      spec:
+        clusterResourceWhitelist:
+          - group: "*"
+            kind: "*"
+        destinations:
+          - namespace: "*"
+            server: https://kubernetes.default.svc
+        sourceRepos:
+          - "*"
+argocd-image-updater:
+  enabled: false
+  extraArgs:
+    - --interval
+    - 1m
+  config:
+    logLevel: "warn"
+  authScripts:
+    enabled: true
+    scripts:
+      auth.sh: |
+        #!/usr/bin/env sh
+        aws ecr get-authorization-token --output text --query 'authorizationData[].authorizationToken' | base64 -d
+  serviceAccount:
+    create: true

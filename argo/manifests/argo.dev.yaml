@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo
+  namespace: argo
+spec:
+  project: core
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argo
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - ServerSideApply=true
+  source:
+    repoURL: git@github.com:Sean-FC/playground.git
+    targetRevision: main
+    path: argo/charts/argo
+    helm:
+      valueFiles:
+        - values.dev.yaml

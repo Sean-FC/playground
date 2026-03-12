@@ -1,0 +1,16 @@
+argo-cd:
+  global:
+    domain: argocd.dev.enervate.io
+argocd-image-updater:
+  config:
+    registries:
+      - name: ECR
+        api_url: https://266294491328.dkr.ecr.eu-west-1.amazonaws.com
+        prefix: 266294491328.dkr.ecr.eu-west-1.amazonaws.com
+        ping: yes
+        insecure: false
+        credentials: ext:/scripts/auth.sh
+        credsexpire: 8h
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::266294491328:role/argocd-image-updater-role"
