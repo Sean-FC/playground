@@ -1,0 +1,33 @@
+ingress-nginx:
+  controller:
+    replicaCount: 1
+    kind: Deployment
+    # Avoiding an ALB since $$
+    hostNetwork: true
+    hostPort:
+      enabled: true
+    dnsPolicy: ClusterFirstWithHostNet
+    ingressClassResource:
+      default: true
+    publishService:
+      enabled: false
+    service:
+      type: ClusterIP
+    # Required to run on the server (we're single master), not an agent
+    tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: Exists
+            - matchExpressions:
+                - key: node-role.kubernetes.io/master
+                  operator: Exists

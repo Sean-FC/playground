@@ -1,0 +1,8 @@
+apiVersion: v2
+dependencies:
+  - name: cert-manager
+    repository: https://charts.jetstack.io
+    version: v1.20.0
+description: A Helm chart for Kubernetes
+name: cert-manager
+version: 0.0.1

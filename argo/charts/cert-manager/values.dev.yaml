@@ -1,0 +1,10 @@
+clusterIssuer:
+  enabled: false
+  email: change-me@enervate.io
+  solvers:
+    - selector:
+        dnsZones:
+          - dev.enervate.io
+      dns01:
+        route53:
+          region: eu-west-1

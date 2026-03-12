@@ -1,0 +1,9 @@
+cert-manager:
+  installCRDs: true
+  replicaCount: 1
+  serviceAccount:
+    create: true
+    name: cert-manager
+clusterIssuer:
+  name: letsencrypt
+  server: https://acme-v02.api.letsencrypt.org/directory

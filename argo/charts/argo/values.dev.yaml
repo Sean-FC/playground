@@ -1,6 +1,16 @@
 argo-cd:
   global:
     domain: argocd.dev.enervate.io
+  server:
+    ingress:
+      enabled: false
+      ingressClassName: nginx
+      path: /
+      pathType: Prefix
+      tls: false
+      annotations:
+        nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+        nginx.ingress.kubernetes.io/ssl-redirect: "false"
 argocd-image-updater:
   config:
     registries:
