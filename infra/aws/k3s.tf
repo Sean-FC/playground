@@ -181,6 +181,12 @@ resource "aws_instance" "k3s_server" {
   )
 }
 
+resource "aws_iam_role_policy_attachment" "k3s_kms_decrypt" {
+  count      = var.k3s_enabled ? 1 : 0
+  role       = aws_iam_role.k3s_node[0].name
+  policy_arn = data.terraform_remote_state.bootstrap.outputs.default_secrets_kms_decrypt
+}
+
 resource "aws_volume_attachment" "k3s_state" {
   count       = var.k3s_enabled ? 1 : 0
   device_name = "/dev/sdf"
