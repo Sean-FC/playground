@@ -1,16 +1,18 @@
 # Avoid the management costs of EKS (~$100 per month not including node runtime)
 locals {
-  k3s_cluster_name       = "core"
-  k3s_architecture       = "arm64"
-  k3s_server_volume_size = 20
-  k3s_agent_volume_size  = 20
-  k3s_state_volume_size  = 20
-  k3s_server_subnet_id   = module.main_subnets.public_subnet_ids[0]
-  k3s_server_name        = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name, "server"])
-  k3s_agent_name         = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name, "agent"])
-  k3s_state_volume_name  = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name, "state"])
-  k3s_api_fqdn           = "${local.k3s_cluster_name}.${aws_route53_zone.stage.name}"
-  k3s_server_private_ip  = cidrhost(data.aws_subnet.k3s_server.cidr_block, 10)
+  k3s_cluster_name              = "core"
+  k3s_architecture              = "arm64"
+  k3s_server_volume_size        = 20
+  k3s_agent_volume_size         = 20
+  k3s_state_volume_size         = 20
+  k3s_server_subnet_id          = module.main_subnets.public_subnet_ids[0]
+  k3s_server_name               = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name, "server"])
+  k3s_agent_name                = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name, "agent"])
+  k3s_state_volume_name         = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name, "state"])
+  k3s_api_fqdn                  = "${local.k3s_cluster_name}.${aws_route53_zone.stage.name}"
+  k3s_server_private_ip         = cidrhost(data.aws_subnet.k3s_server.cidr_block, 10)
+  k3s_server_url_parameter_name = format("/%s/k3s/%s/server-url", module.context.id, local.k3s_cluster_name)
+  k3s_token_parameter_name      = format("/%s/k3s/%s/token", module.context.id, local.k3s_cluster_name)
   k3s_arch_to_ami = {
     arm64  = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64"
     x86_64 = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
@@ -29,34 +31,58 @@ data "aws_subnet" "k3s_server" {
   id = local.k3s_server_subnet_id
 }
 
-resource "aws_iam_role" "k3s_node" {
-  count = var.k3s_enabled ? 1 : 0
-  name  = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name, "node"])
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-        Action = "sts:AssumeRole"
-      }
-    ]
-  })
+data "aws_iam_policy_document" "k3s_node_assume" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
 }
 
-resource "aws_iam_role_policy_attachment" "k3s_node_ssm" {
+resource "aws_iam_role" "k3s_server_node" {
+  count = var.k3s_enabled ? 1 : 0
+  name  = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name, "server", "node"])
+
+  assume_role_policy = data.aws_iam_policy_document.k3s_node_assume.json
+}
+
+resource "aws_iam_role" "k3s_agent_node" {
+  count              = var.k3s_enabled ? 1 : 0
+  name               = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name, "agent", "node"])
+  assume_role_policy = data.aws_iam_policy_document.k3s_node_assume.json
+}
+
+resource "aws_iam_role_policy_attachment" "k3s_server_node_ssm" {
   count      = var.k3s_enabled ? 1 : 0
-  role       = aws_iam_role.k3s_node[0].name
+  role       = aws_iam_role.k3s_server_node[0].name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-resource "aws_iam_instance_profile" "k3s_node" {
+resource "aws_iam_role_policy_attachment" "k3s_agent_node_ssm" {
+  count      = var.k3s_enabled ? 1 : 0
+  role       = aws_iam_role.k3s_agent_node[0].name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_role_policy_attachment" "k3s_agent_node_ecr_pull" {
+  count      = var.k3s_enabled ? 1 : 0
+  role       = aws_iam_role.k3s_agent_node[0].name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
+}
+
+resource "aws_iam_instance_profile" "k3s_server_node" {
   count = var.k3s_enabled ? 1 : 0
-  name  = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name, "node"])
-  role  = aws_iam_role.k3s_node[0].name
+  name  = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name, "server", "node"])
+  role  = aws_iam_role.k3s_server_node[0].name
+}
+
+resource "aws_iam_instance_profile" "k3s_agent_node" {
+  count = var.k3s_enabled ? 1 : 0
+  name  = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name, "agent", "node"])
+  role  = aws_iam_role.k3s_agent_node[0].name
 }
 
 resource "aws_key_pair" "k3s" {
@@ -131,8 +157,27 @@ resource "aws_security_group" "k3s" {
   }
 
   tags = {
-    Name = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name])
+    Name                     = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name])
+    "karpenter.sh/discovery" = local.k3s_cluster_name
   }
+}
+
+resource "aws_ssm_parameter" "k3s_server_url" {
+  count = var.k3s_enabled ? 1 : 0
+  name  = local.k3s_server_url_parameter_name
+  type  = "String"
+  value = "https://${local.k3s_server_private_ip}:6443"
+
+  tags = module.context.tags
+}
+
+resource "aws_ssm_parameter" "k3s_agent_token" {
+  count = var.k3s_enabled ? 1 : 0
+  name  = local.k3s_token_parameter_name
+  type  = "SecureString"
+
+  value = local.secrets_main.k3s.token
+  tags  = module.context.tags
 }
 
 resource "aws_instance" "k3s_server" {
@@ -143,7 +188,7 @@ resource "aws_instance" "k3s_server" {
   subnet_id                   = local.k3s_server_subnet_id
   private_ip                  = local.k3s_server_private_ip
   vpc_security_group_ids      = [aws_security_group.k3s[0].id, aws_security_group.default_ssh.id]
-  iam_instance_profile        = aws_iam_instance_profile.k3s_node[0].name
+  iam_instance_profile        = aws_iam_instance_profile.k3s_server_node[0].name
   associate_public_ip_address = true
 
   metadata_options {
@@ -183,8 +228,36 @@ resource "aws_instance" "k3s_server" {
 
 resource "aws_iam_role_policy_attachment" "k3s_kms_decrypt" {
   count      = var.k3s_enabled ? 1 : 0
-  role       = aws_iam_role.k3s_node[0].name
+  role       = aws_iam_role.k3s_server_node[0].name
   policy_arn = data.terraform_remote_state.bootstrap.outputs.default_secrets_kms_decrypt
+}
+
+data "aws_iam_policy_document" "k3s_agent_bootstrap" {
+  count = var.k3s_enabled ? 1 : 0
+
+  statement {
+    sid    = "ReadK3sAgentBootstrapParameters"
+    effect = "Allow"
+    actions = [
+      "ssm:GetParameter",
+    ]
+    resources = [
+      aws_ssm_parameter.k3s_server_url[0].arn,
+      aws_ssm_parameter.k3s_agent_token[0].arn,
+    ]
+  }
+}
+
+resource "aws_iam_policy" "k3s_agent_bootstrap" {
+  count  = var.k3s_enabled ? 1 : 0
+  name   = join(module.context.delimiter, [module.context.id, local.k3s_cluster_name, "agent", "bootstrap"])
+  policy = data.aws_iam_policy_document.k3s_agent_bootstrap[0].json
+}
+
+resource "aws_iam_role_policy_attachment" "k3s_agent_bootstrap" {
+  count      = var.k3s_enabled ? 1 : 0
+  role       = aws_iam_role.k3s_agent_node[0].name
+  policy_arn = aws_iam_policy.k3s_agent_bootstrap[0].arn
 }
 
 resource "aws_volume_attachment" "k3s_state" {
@@ -232,7 +305,7 @@ resource "aws_instance" "k3s_agent" {
   key_name               = aws_key_pair.k3s[0].key_name
   subnet_id              = local.k3s_compute_private_subnet_ids[count.index % length(local.k3s_compute_private_subnet_ids)]
   vpc_security_group_ids = [aws_security_group.k3s[0].id, aws_security_group.default_ssh.id]
-  iam_instance_profile   = aws_iam_instance_profile.k3s_node[0].name
+  iam_instance_profile   = aws_iam_instance_profile.k3s_agent_node[0].name
 
   metadata_options {
     http_endpoint               = "enabled"
@@ -263,6 +336,16 @@ resource "aws_instance" "k3s_agent" {
       Role = "k3s-agent"
     }
   )
+}
+
+# Custom convention; used in conjunction with karpenter
+# Required because the dynamic subnets module used only ignores changes to 'kubernetes' or 'SubnetType' tags
+# TODO explore graft https://github.com/ms-henglu/graft
+resource "aws_ec2_tag" "k3s_compute_subnet_kubernetes" {
+  for_each    = var.k3s_enabled ? toset(local.k3s_compute_private_subnet_ids) : toset([])
+  resource_id = each.value
+  key         = "kubernetes"
+  value       = "compute"
 }
 
 # OIDC bucket

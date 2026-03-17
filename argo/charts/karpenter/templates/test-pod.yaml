@@ -1,0 +1,36 @@
+{{- if .Values.testPod.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.testPod.name }}
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.testPod.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .Values.testPod.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  serviceAccountName: {{ .Values.testPod.name }}
+  {{- with .Values.testPod.nodeSelector }}
+  nodeSelector:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.testPod.affinity }}
+  affinity:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.testPod.tolerations }}
+  tolerations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  containers:
+  - name: {{ .Values.testPod.name }}
+    image: {{ .Values.testPod.image }}
+    command:
+{{ toYaml .Values.testPod.command | indent 4 }}
+{{- end }}

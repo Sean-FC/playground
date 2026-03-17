@@ -48,6 +48,6 @@ resource "aws_iam_policy" "cert_manager_route53" {
 resource "aws_iam_role_policy_attachment" "cert_manager_route53" {
   count = var.k3s_enabled ? 1 : 0
   # Master currently bound to EIP to avoid an ALB
-  role       = aws_iam_role.k3s_node[0].name
+  role       = aws_iam_role.k3s_server_node[0].name
   policy_arn = aws_iam_policy.cert_manager_route53[0].arn
 }

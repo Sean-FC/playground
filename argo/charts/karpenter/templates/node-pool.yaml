@@ -1,0 +1,14 @@
+{{- $root := . }}
+{{- range $name := keys .Values.nodePools }}
+{{- $nodePool := index $root.Values.nodePools $name }}
+{{- if $nodePool.enabled }}
+{{- $ctx := dict "Values" $root.Values "Chart" $root.Chart "Release" $root.Release "Capabilities" $root.Capabilities "Template" $root.Template "Files" $root.Files "nodePool" $nodePool "nodePoolName" $name }}
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: {{ $name }}
+spec:
+{{ tpl (toYaml $nodePool.spec) $ctx | indent 2 }}
+---
+{{- end }}
+{{- end }}
