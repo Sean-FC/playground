@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "amazon-eks-pod-identity-webhook.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "amazon-eks-pod-identity-webhook.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "amazon-eks-pod-identity-webhook.fullname" . }}
+{{- with .Values.podLabels }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.podAnnotations }}
+      annotations:
+{{ toYaml . | indent 8 }}
+{{- end }}
+    spec:
+{{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.podSecurityContext }}
+      securityContext:
+{{ toYaml . | indent 8 }}
+{{- end }}
+      serviceAccountName: {{ include "amazon-eks-pod-identity-webhook.serviceAccountName" . }}
+      containers:
+      - name: {{ include "amazon-eks-pod-identity-webhook.fullname" . }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+{{- with .Values.securityContext }}
+        securityContext:
+{{ toYaml . | indent 10 }}
+{{- end }}
+        command:
+        - /webhook
+        args:
+{{- range .Values.args }}
+        - {{ tpl . $ | quote }}
+{{- end }}
+{{- with .Values.resources }}
+        resources:
+{{ toYaml . | indent 10 }}
+{{- end }}
+        volumeMounts:
+        - name: cert
+          mountPath: /etc/webhook/certs
+          readOnly: true
+{{- with .Values.volumeMounts }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+      volumes:
+      - name: cert
+        secret:
+          secretName: {{ include "amazon-eks-pod-identity-webhook.certificateSecretName" . }}
+{{- with .Values.volumes }}
+{{ toYaml . | indent 6 }}
+{{- end }}
+{{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}

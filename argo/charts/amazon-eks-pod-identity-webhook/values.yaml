@@ -1,0 +1,75 @@
+replicaCount: 1
+nameOverride: ""
+fullnameOverride: ""
+image:
+  repository: public.ecr.aws/eks/amazon-eks-pod-identity-webhook
+  pullPolicy: IfNotPresent
+  tag: v0.6.13
+imagePullSecrets: []
+args:
+  - --in-cluster=false
+  - --namespace={{ .Release.Namespace }}
+  - --service-name={{ include "amazon-eks-pod-identity-webhook.serviceName" . }}
+  - --annotation-prefix=eks.amazonaws.com
+  - --token-audience=sts.amazonaws.com
+  - --aws-default-region=eu-west-1
+  - --logtostderr
+resources: {}
+volumes: []
+volumeMounts: []
+nodeSelector:
+  kubernetes.io/os: "linux"
+tolerations: []
+affinity: {}
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+rbac:
+  create: true
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
+service:
+  name: ""
+  type: ClusterIP
+  port: 443
+  targetPort: 443
+webhook:
+  name: pod-identity-webhook.amazonaws.com
+  path: /mutate
+  failurePolicy: Fail
+  admissionReviewVersions:
+    - v1beta1
+  objectSelector:
+    matchExpressions:
+      - key: eks.amazonaws.com/skip-pod-identity-webhook
+        operator: DoesNotExist
+        values: []
+certManager:
+  caInjectionAnnotation: ""
+  clusterIssuer:
+    create: true
+    name: selfsigned
+  certificate:
+    name: ""
+    secretName: ""
+    isCA: true
+    duration: 2160h # 90d
+    renewBefore: 360h # 15d
+    issuerRef:
+      kind: ClusterIssuer
+# Quick test pod to verify the pod is being mutated correctly
+testPod:
+  enabled: false
+  name: test
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::266294491328:role/test"
+      eks.amazonaws.com/audience: "sts.amazonaws.com"
+  image: public.ecr.aws/aws-cli/aws-cli:2.17.40
+  command:
+    - /bin/sh
+    - -c
+    - sleep infinity
