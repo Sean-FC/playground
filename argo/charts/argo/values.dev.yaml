@@ -1,6 +1,20 @@
 argo-cd:
   global:
     domain: argocd.dev.enervate.io
+  server:
+    httproute:
+      enabled: true
+      parentRefs:
+        - name: traefik-gateway
+          namespace: traefik
+          sectionName: websecure
+      hostnames:
+        - argocd.dev.enervate.io
+      rules:
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /
 argocd-image-updater:
   config:
     registries:

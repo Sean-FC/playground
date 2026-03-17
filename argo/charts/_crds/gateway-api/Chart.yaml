@@ -1,0 +1,6 @@
+apiVersion: v2
+name: gateway-api
+description: Helm chart wrapping the K8s sig gateway-api
+type: application
+version: 0.1.0
+appVersion: "1.5.1"
