@@ -27,3 +27,21 @@ data "aws_iam_policy_document" "default_kms_key_policy" {
     }
   }
 }
+
+data "aws_iam_policy_document" "external_decrypt" {
+  statement {
+    sid    = "DecryptExternalSecrets"
+    effect = "Allow"
+    actions = [
+      "kms:Decrypt",
+    ]
+    resources = [
+      aws_kms_key.external.arn,
+    ]
+  }
+}
+
+resource "aws_iam_policy" "external_decrypt" {
+  name   = join(module.context.delimiter, [module.context.id, "external", "decrypt"])
+  policy = data.aws_iam_policy_document.external_decrypt.json
+}

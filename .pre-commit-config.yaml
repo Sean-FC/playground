@@ -10,6 +10,7 @@ repos:
       - id: 'check-symlinks'
       - id: 'check-toml'
       - id: 'check-yaml'
+        exclude: '^argo/charts/.+/templates/.+\.ya?ml$'
       - id: 'end-of-file-fixer'
       - id: 'mixed-line-ending'
       - id: 'pretty-format-json'
@@ -19,6 +20,7 @@ repos:
     rev: 'v0.21.0'
     hooks:
       - id: 'yamlfmt'
+        exclude: '^argo/charts/.+/templates/.+\.ya?ml$'
   - repo: 'https://github.com/hadolint/hadolint'
     rev: 'v2.14.0'
     hooks:

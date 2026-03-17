@@ -19,6 +19,23 @@ provider "github" {
 EOF
 }
 
+generate "dependency" {
+  path      = "dependencies.tf"
+  if_exists = "overwrite_terragrunt"
+
+  contents = <<EOF
+data "terraform_remote_state" "bootstrap" {
+  backend = "s3"
+  config = {
+    bucket = var.state_bucket_name
+    key    = var.bootstrap_state_location
+    region = var.aws_region
+  }
+}
+
+EOF
+}
+
 generate "extras" {
   path      = "extra_variables.tf"
   if_exists = "overwrite_terragrunt"
