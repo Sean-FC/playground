@@ -1,0 +1,48 @@
+traefik:
+  deployment:
+    kind: Deployment
+    replicas: 1
+  service:
+    enabled: true
+    type: LoadBalancer
+  providers:
+    kubernetesCRD:
+      enabled: false
+    kubernetesGateway:
+      enabled: true
+  gateway:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt
+    listeners:
+      web:
+        port: 80
+        protocol: HTTP
+        namespacePolicy:
+          from: All
+      websecure:
+        port: 443
+        protocol: HTTPS
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: edge-tls
+        namespacePolicy:
+          from: All
+  ports:
+    web:
+      port: 80
+    websecure:
+      port: 443
+  # Only run on control-plane nodes
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists

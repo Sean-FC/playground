@@ -56,9 +56,11 @@ PRIVATE_IP="$(curl -sf -H "X-aws-ec2-metadata-token: $${IMDS_TOKEN}" \
 PUBLIC_IP="$(curl -sf -H "X-aws-ec2-metadata-token: $${IMDS_TOKEN}" \
   http://169.254.169.254/latest/meta-data/public-ipv4 || true)"
 PUBLIC_IP_TLS_SAN=""
+PUBLIC_IP_NODE_EXTERNAL=""
 
 if [ -n "$${PUBLIC_IP}" ]; then
   PUBLIC_IP_TLS_SAN=$(printf '  - "%s"\n' "$${PUBLIC_IP}")
+  PUBLIC_IP_NODE_EXTERNAL=$(printf 'node-external-ip: "%s"\n' "$${PUBLIC_IP}")
 fi
 
 cat >/etc/rancher/k3s/config.yaml <<EOF
@@ -81,6 +83,7 @@ service-cidr: "172.21.0.0/16"
 cluster-dns: "172.21.0.10"
 node-ip: "$${PRIVATE_IP}"
 advertise-address: "$${PRIVATE_IP}"
+$${PUBLIC_IP_NODE_EXTERNAL}
 
 # Security
 secrets-encryption: true

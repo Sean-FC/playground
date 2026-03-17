@@ -1,13 +1,13 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: irsa
+  name: traefik
   namespace: argo
 spec:
   project: core
   destination:
     server: https://kubernetes.default.svc
-    namespace: irsa
+    namespace: traefik
   syncPolicy:
     automated: {}
     syncOptions:
@@ -15,7 +15,8 @@ spec:
   source:
     repoURL: git@github.com:Sean-FC/playground.git
     targetRevision: main
-    path: argo/charts/amazon-eks-pod-identity-webhook
+    path: argo/charts/traefik
     helm:
+      skipCrds: true
       valueFiles:
-        - values.yaml
+        - values.dev.yaml

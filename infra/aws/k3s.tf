@@ -216,6 +216,15 @@ resource "aws_route53_record" "k3s_api" {
   records = [aws_eip.k3s_server[0].public_ip]
 }
 
+resource "aws_route53_record" "k3s_apps" {
+  count   = var.k3s_enabled ? 1 : 0
+  zone_id = aws_route53_zone.stage.zone_id
+  name    = "*.${aws_route53_zone.stage.name}"
+  type    = "A"
+  ttl     = 300
+  records = [aws_eip.k3s_server[0].public_ip]
+}
+
 resource "aws_instance" "k3s_agent" {
   count                  = var.k3s_enabled ? var.k3s_agent_count : 0
   ami                    = nonsensitive(data.aws_ssm_parameter.al2023_ami[0].value)

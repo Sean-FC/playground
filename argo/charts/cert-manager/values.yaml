@@ -5,6 +5,20 @@ cert-manager:
   serviceAccount:
     create: true
     name: cert-manager
+  config:
+    enableGatewayAPI: true
+  # Only run on master
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
 clusterIssuer:
   name: letsencrypt
   server: https://acme-v02.api.letsencrypt.org/directory

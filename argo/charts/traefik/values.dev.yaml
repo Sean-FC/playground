@@ -1,0 +1,7 @@
+traefik:
+  gateway:
+    listeners:
+      web:
+        hostname: "*.dev.enervate.io"
+      websecure:
+        hostname: "*.dev.enervate.io"
