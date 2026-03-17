@@ -1,0 +1,26 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: {{ include "amazon-eks-pod-identity-webhook.fullname" . }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ include "amazon-eks-pod-identity-webhook.caInjectFrom" . | quote }}
+webhooks:
+- name: {{ .Values.webhook.name }}
+  failurePolicy: {{ .Values.webhook.failurePolicy }}
+  clientConfig:
+    service:
+      name: {{ include "amazon-eks-pod-identity-webhook.serviceName" . }}
+      namespace: {{ .Release.Namespace }}
+      path: {{ .Values.webhook.path | quote }}
+{{- with .Values.webhook.objectSelector }}
+  objectSelector:
+{{ toYaml . | indent 4 }}
+{{- end }}
+  rules:
+  - operations: ["CREATE"]
+    apiGroups: [""]
+    apiVersions: ["v1"]
+    resources: ["pods"]
+  sideEffects: None
+  admissionReviewVersions:
+{{ toYaml .Values.webhook.admissionReviewVersions | indent 2 }}

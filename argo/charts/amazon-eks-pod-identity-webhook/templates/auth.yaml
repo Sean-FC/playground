@@ -1,0 +1,86 @@
+{{- if .Values.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "amazon-eks-pod-identity-webhook.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- with .Values.serviceAccount.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+{{- end }}
+{{- if .Values.rbac.create }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "amazon-eks-pod-identity-webhook.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - update
+  - patch
+  resourceNames:
+  - {{ include "amazon-eks-pod-identity-webhook.fullname" . | quote }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "amazon-eks-pod-identity-webhook.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "amazon-eks-pod-identity-webhook.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "amazon-eks-pod-identity-webhook.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "amazon-eks-pod-identity-webhook.fullname" . }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - get
+  - watch
+  - list
+- apiGroups:
+  - certificates.k8s.io
+  resources:
+  - certificatesigningrequests
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "amazon-eks-pod-identity-webhook.fullname" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "amazon-eks-pod-identity-webhook.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "amazon-eks-pod-identity-webhook.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

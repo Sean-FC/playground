@@ -1,0 +1,6 @@
+apiVersion: v2
+name: amazon-eks-pod-identity-webhook
+description: Helm chart wrapping amazon-eks-pod-identity-webhook
+type: application
+version: 0.1.0
+appVersion: "0.6.13"
