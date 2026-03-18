@@ -1,0 +1,9 @@
+apiVersion: v2
+dependencies:
+  - name: external-secrets
+    repository: https://charts.external-secrets.io
+    version: 2.1.0
+    condition: external-secrets.enabled
+description: Helm chart managing external-secrets; a controller that watches for changes in Secrets + syncs them to Kubernetes
+name: external-secrets-operator
+version: 0.1.0

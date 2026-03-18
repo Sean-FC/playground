@@ -1,0 +1,6 @@
+external-secrets:
+  replicaCount: 1
+  leaderElect: false
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::266294491328:role/dev-aws-external-secrets-operator"

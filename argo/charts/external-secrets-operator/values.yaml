@@ -1,0 +1,70 @@
+external-secrets:
+  enabled: true
+  fullnameOverride: external-secrets
+  installCRDs: true
+  replicaCount: 2
+  leaderElect: true
+  log:
+    level: info
+    timeEncoding: epoch
+  serviceAccount:
+    create: true
+    name: external-secrets-operator
+    annotations:
+      eks.amazonaws.com/audience: "sts.amazonaws.com"
+  resources:
+    requests:
+      cpu: "10m"
+      memory: "32Mi"
+    limits:
+      cpu: "100m"
+      memory: "64Mi"
+  nodeSelector:
+    kubernetes.io/os: linux
+  webhook:
+    create: true
+    replicaCount: 1
+    failurePolicy: Fail
+    resources:
+      requests:
+        cpu: "10m"
+        memory: "32Mi"
+      limits:
+        cpu: "100m"
+        memory: "64Mi"
+    nodeSelector:
+      kubernetes.io/os: linux
+  certController:
+    create: true
+    resources:
+      requests:
+        cpu: "10m"
+        memory: "32Mi"
+      limits:
+        cpu: "100m"
+        memory: "64Mi"
+    nodeSelector:
+      kubernetes.io/os: linux
+clusterSecretStores:
+  secretsmanager:
+    enabled: true
+    provider:
+      aws:
+        service: SecretsManager
+        region: eu-west-1
+        auth:
+          jwt:
+            serviceAccountRef:
+              name: external-secrets-operator
+              namespace: "" # Interpolated into the release namespace
+  parameterstore:
+    enabled: true
+    provider:
+      aws:
+        service: ParameterStore
+        region: eu-west-1
+        auth:
+          jwt:
+            serviceAccountRef:
+              name: external-secrets-operator
+              namespace: ""
