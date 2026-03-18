@@ -1,0 +1,8 @@
+apiVersion: v2
+dependencies:
+  - name: karpenter
+    repository: oci://public.ecr.aws/karpenter
+    version: 1.9.0
+description: Helm chart managing the Karpenter controller and baseline AWS capacity classes
+name: karpenter
+version: 0.0.1

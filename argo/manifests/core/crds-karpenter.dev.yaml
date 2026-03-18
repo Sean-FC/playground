@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: gateway-api
+  name: crds-karpenter
   namespace: argo
 spec:
   project: core
@@ -13,6 +13,6 @@ spec:
     syncOptions:
       - ServerSideApply=true
   source:
-    repoURL: git@github.com:Sean-FC/playground.git
-    targetRevision: feat/ingress
-    path: argo/charts/_crds/gateway-api
+    repoURL: public.ecr.aws/karpenter
+    chart: karpenter-crd
+    targetRevision: 1.9.0

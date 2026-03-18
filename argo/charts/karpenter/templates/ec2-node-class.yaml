@@ -1,0 +1,14 @@
+{{- $root := . }}
+{{- range $name := keys .Values.nodeClasses }}
+{{- $nodeClass := index $root.Values.nodeClasses $name }}
+{{- if $nodeClass.enabled }}
+{{- $ctx := dict "Values" $root.Values "Chart" $root.Chart "Release" $root.Release "Capabilities" $root.Capabilities "Template" $root.Template "Files" $root.Files "nodeClass" $nodeClass "nodeClassName" $name }}
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: {{ $name }}
+spec:
+{{ tpl (toYaml $nodeClass.spec) $ctx | indent 2 }}
+---
+{{- end }}
+{{- end }}

@@ -1,0 +1,35 @@
+karpenter:
+  settings:
+    clusterEndpoint: "https://core.dev.enervate.io:6443"
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::266294491328:role/karpenter-controller"
+nodeClasses:
+  default:
+    enabled: true
+    bootstrap:
+      serverUrlParameterName: "/dev-aws/k3s/core/server-url"
+      tokenParameterName: "/dev-aws/k3s/core/token"
+    spec:
+      role: "dev-aws-core-agent-node"
+      tags:
+        Env: dev
+  gpu:
+    enabled: false
+nodePools:
+  default:
+    enabled: true
+    spec:
+      template:
+        metadata:
+          labels:
+            Env: dev
+  small-spot:
+    enabled: true
+    spec:
+      template:
+        metadata:
+          labels:
+            Env: dev
+  gpu:
+    enabled: false

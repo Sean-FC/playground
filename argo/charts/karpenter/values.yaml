@@ -1,0 +1,229 @@
+karpenter:
+  replicas: 1
+  imagePullPolicy: IfNotPresent
+  serviceAccount:
+    create: true
+    name: karpenter
+    annotations:
+      eks.amazonaws.com/audience: "sts.amazonaws.com"
+  settings:
+    clusterName: core
+    eksControlPlane: false
+  logLevel: info
+  controller:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+nodeClasses:
+  default:
+    enabled: false
+    bootstrap:
+      k3sVersion: "v1.34.3+k3s1"
+    spec:
+      amiFamily: Custom
+      amiSelectorTerms:
+        - alias: al2023@latest
+      metadataOptions:
+        httpEndpoint: enabled
+        httpTokens: required
+        httpPutResponseHopLimit: 4
+      subnetSelectorTerms:
+        - tags:
+            kubernetes: "compute"
+      securityGroupSelectorTerms:
+        - tags:
+            karpenter.sh/discovery: core
+      associatePublicIPAddress: false
+      tags:
+        CreatedBy: karpenter
+      userData: |
+        #!/bin/bash
+        set -euxo pipefail
+
+        dnf update -y
+
+        if ! command -v aws >/dev/null 2>&1; then
+          dnf install -y awscli
+        fi
+
+        IMDS_TOKEN="$(curl -sX PUT "http://169.254.169.254/latest/api/token" \
+          -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")"
+
+        PRIVATE_IP="$(curl -sf -H "X-aws-ec2-metadata-token: ${IMDS_TOKEN}" \
+          http://169.254.169.254/latest/meta-data/local-ipv4)"
+        PUBLIC_IP="$(curl -sf -H "X-aws-ec2-metadata-token: ${IMDS_TOKEN}" \
+          http://169.254.169.254/latest/meta-data/public-ipv4 || true)"
+        INSTANCE_ID="$(curl -sf -H "X-aws-ec2-metadata-token: ${IMDS_TOKEN}" \
+          http://169.254.169.254/latest/meta-data/instance-id)"
+        AVAILABILITY_ZONE="$(curl -sf -H "X-aws-ec2-metadata-token: ${IMDS_TOKEN}" \
+          http://169.254.169.254/latest/meta-data/placement/availability-zone)"
+        AWS_REGION="${AVAILABILITY_ZONE%?}"
+        PUBLIC_IP_NODE_EXTERNAL=""
+
+        if [ -n "${PUBLIC_IP}" ]; then
+          PUBLIC_IP_NODE_EXTERNAL=$(printf 'node-external-ip: "%s"\n' "${PUBLIC_IP}")
+        fi
+
+        SERVER_URL="$(aws ssm get-parameter \
+          --name "{{ .nodeClass.bootstrap.serverUrlParameterName }}" \
+          --query 'Parameter.Value' \
+          --output text \
+          --region "${AWS_REGION}")"
+        TOKEN="$(aws ssm get-parameter \
+          --name "{{ .nodeClass.bootstrap.tokenParameterName }}" \
+          --with-decryption \
+          --query 'Parameter.Value' \
+          --output text \
+          --region "${AWS_REGION}")"
+
+        mkdir -p /etc/rancher/k3s
+        cat >/etc/rancher/k3s/config.yaml <<EOF
+        token: "${TOKEN}"
+
+        # Node settings
+        node-name: "karpenter-${INSTANCE_ID}"
+        node-label:
+          - "topology.kubernetes.io/region=${AWS_REGION}"
+          - "topology.kubernetes.io/zone=${AVAILABILITY_ZONE}"
+        node-taint:
+          - "karpenter.sh/unregistered:NoExecute"
+
+        # Networking
+        server: "${SERVER_URL}"
+        node-ip: "${PRIVATE_IP}"
+        ${PUBLIC_IP_NODE_EXTERNAL}
+
+        kubelet-arg:
+          - "provider-id=aws:///${AVAILABILITY_ZONE}/${INSTANCE_ID}"
+
+        # Logging
+        debug: false
+        EOF
+
+        curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent" INSTALL_K3S_VERSION="{{ .nodeClass.bootstrap.k3sVersion }}" sh -
+  gpu:
+    enabled: false
+    bootstrap:
+      k3sVersion: "v1.34.3+k3s1"
+    spec: {}
+nodePools:
+  default:
+    enabled: false
+    spec:
+      disruption:
+        consolidationPolicy: WhenEmptyOrUnderutilized
+        consolidateAfter: 1m
+      limits:
+        cpu: 1000
+      template:
+        metadata:
+          labels:
+            node-role.kubernetes.io/cpu: "true"
+        spec:
+          expireAfter: 720h
+          nodeClassRef:
+            group: karpenter.k8s.aws
+            kind: EC2NodeClass
+            name: default
+          requirements:
+            - key: kubernetes.io/arch
+              operator: In
+              values:
+                - arm64
+            - key: kubernetes.io/os
+              operator: In
+              values:
+                - linux
+            - key: karpenter.sh/capacity-type
+              operator: In
+              values:
+                - on-demand
+            - key: karpenter.k8s.aws/instance-category
+              operator: In
+              values:
+                - m
+                - t
+            - key: karpenter.k8s.aws/instance-generation
+              operator: Gt
+              values:
+                - "5"
+  small-spot:
+    enabled: false
+    spec:
+      disruption:
+        consolidationPolicy: WhenEmptyOrUnderutilized
+        consolidateAfter: 1m
+      limits:
+        cpu: 1000
+      template:
+        metadata:
+          labels:
+            node-role.kubernetes.io/cpu: "true"
+            capacity-tier: spot
+        spec:
+          expireAfter: 168h
+          nodeClassRef:
+            group: karpenter.k8s.aws
+            kind: EC2NodeClass
+            name: default
+          requirements:
+            - key: kubernetes.io/os
+              operator: In
+              values:
+                - linux
+            - key: karpenter.sh/capacity-type
+              operator: In
+              values:
+                - spot
+            - key: karpenter.k8s.aws/instance-category
+              operator: In
+              values:
+                - t
+                - m
+            - key: karpenter.k8s.aws/instance-size
+              operator: In
+              values:
+                - medium
+                - large
+            - key: karpenter.k8s.aws/instance-generation
+              operator: Gt
+              values:
+                - "5"
+  gpu:
+    enabled: false
+    spec:
+      template:
+        spec:
+          nodeClassRef:
+            group: karpenter.k8s.aws
+            kind: EC2NodeClass
+            name: gpu
+# Quick test pod to verify the pod is being mutated correctly
+testPod:
+  enabled: false
+  name: test
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::266294491328:role/test"
+      eks.amazonaws.com/audience: "sts.amazonaws.com"
+  image: public.ecr.aws/aws-cli/aws-cli:2.17.40
+  command:
+    - /bin/sh
+    - -c
+    - sleep infinity
+  nodeSelector:
+    node-role.kubernetes.io/cpu: "true"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: karpenter.sh/capacity-type
+                operator: In
+                values:
+                  - spot
+  tolerations: []

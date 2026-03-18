@@ -55,6 +55,9 @@ PRIVATE_IP="$(curl -sf -H "X-aws-ec2-metadata-token: $${IMDS_TOKEN}" \
   http://169.254.169.254/latest/meta-data/local-ipv4)"
 PUBLIC_IP="$(curl -sf -H "X-aws-ec2-metadata-token: $${IMDS_TOKEN}" \
   http://169.254.169.254/latest/meta-data/public-ipv4 || true)"
+AVAILABILITY_ZONE="$(curl -sf -H "X-aws-ec2-metadata-token: $${IMDS_TOKEN}" \
+  http://169.254.169.254/latest/meta-data/placement/availability-zone)"
+AWS_REGION="$${AVAILABILITY_ZONE%?}"
 PUBLIC_IP_TLS_SAN=""
 PUBLIC_IP_NODE_EXTERNAL=""
 
@@ -75,6 +78,8 @@ disable:
 node-name: "${node_name}"
 node-label:
   - "environment=${env}"
+  - "topology.kubernetes.io/region=$${AWS_REGION}"
+  - "topology.kubernetes.io/zone=$${AVAILABILITY_ZONE}"
 cluster-init: true
 
 # Networking
