@@ -1,3 +1,7 @@
+cert-manager:
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::266294491328:role/dev-aws-cert-manager"
 clusterIssuer:
   enabled: true
   email: objects-accrual4g@icloud.com

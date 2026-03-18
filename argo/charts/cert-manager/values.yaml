@@ -5,6 +5,8 @@ cert-manager:
   serviceAccount:
     create: true
     name: cert-manager
+    annotations:
+      eks.amazonaws.com/audience: "sts.amazonaws.com"
   config:
     enableGatewayAPI: true
   # Only run on master
