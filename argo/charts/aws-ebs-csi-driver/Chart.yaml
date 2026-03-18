@@ -1,0 +1,8 @@
+apiVersion: v2
+dependencies:
+  - name: aws-ebs-csi-driver
+    repository: https://kubernetes-sigs.github.io/aws-ebs-csi-driver
+    version: 2.56.1
+description: Helm chart managing the AWS EBS CSI driver
+name: aws-ebs-csi-driver
+version: 0.0.1
