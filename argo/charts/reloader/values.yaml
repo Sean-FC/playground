@@ -1,0 +1,49 @@
+reloader:
+  enabled: true
+  fullnameOverride: "reloader"
+  reloader:
+    # Watch criteria
+    watchGlobally: true
+    namespaceSelector: "kubernetes.io/metadata.name in (argo)" # Explicit namespaces
+    # Behavior
+    isArgoRollouts: true
+    reloadStrategy: "annotations"
+    ignoreSecrets: false
+    ignoreConfigMaps: false
+    ignoreJobs: true
+    ignoreCronJobs: true
+    # Resilient deployment
+    enableHA: true
+    deployment:
+      replicas: 2
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "128Mi"
+        limits:
+          cpu: "100m"
+          memory: "128Mi"
+      nodeSelector:
+        kubernetes.io/os: "linux"
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: "topology.kubernetes.io/zone"
+          whenUnsatisfiable: "DoNotSchedule"
+          labelSelector:
+            matchLabels:
+              app: "reloader"
+      containerSecurityContext:
+        capabilities:
+          drop:
+            - ALL
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+    readOnlyRootFileSystem: true
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 1
+    # Monitoring
+    enableMetricsByNamespace: false
+    podMonitor:
+      enabled: false
+      interval: 60s
