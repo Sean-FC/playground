@@ -1,0 +1,35 @@
+trivy:
+  enabled: true
+  grafanaDashboard:
+    enabled: true
+  operator:
+    scanJobTimeout: 10m
+    scanJobsConcurrentLimit: 1
+    scanJobsRetryDelay: 1h
+    sbomGenerationEnabled: true
+    clusterSbomCacheEnabled: true
+    configAuditScannerEnabled: true
+    rbacAssessmentScannerEnabled: false
+    infraAssessmentScannerEnabled: false
+    clusterComplianceEnabled: false
+    exposedSecretScannerEnabled: false
+  trivy:
+    storageClassEnabled: false
+    severity: MEDIUM,HIGH,CRITICAL
+    slow: false
+    configFile:
+      parallel: 1
+    ignoreUnfixed: false
+    timeout: 10m
+    skipDirs:
+      - /usr/share/man
+      - /usr/share/doc
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  serviceMonitor:
+    enabled: true
