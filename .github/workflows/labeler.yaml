@@ -1,0 +1,43 @@
+name: "Pull Request Labeler"
+on:
+  - pull_request_target
+jobs:
+  labeler:
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      # Dynamic labels remains an open issue, see: https://github.com/actions/labeler/issues/708
+      - name: Build effective labeler config
+        shell: bash
+        env:
+          DEFAULT_LABELER_FILE: .github/labeler.yaml
+        run: |
+          set -euo pipefail
+
+          generated_file="$RUNNER_TEMP/labeler.generated.yaml"
+
+          cp "$DEFAULT_LABELER_FILE" "$generated_file"
+
+          # For each folder under charts, add a label matching changed files in that chart.
+          find argo/charts -maxdepth 1 -mindepth 1 -type d | sort | while read -r folder; do
+            label="${folder#argo/charts/}"
+            # Trim label length rather than failing if excessive
+            if [ "${#label}" -gt 63 ]; then
+              echo "Label is longer than 63 characters: $label"
+              label="${label:0:63}"
+              echo "Trimmed label to 63 characters: $label"
+            fi
+            cat >> "$generated_file" <<_EOF
+          $label:
+            - changed-files:
+                - any-glob-to-any-file:
+                    - '$folder/**/*'
+          _EOF
+          done
+
+          echo "LABELER_FILE=$generated_file" >> "$GITHUB_ENV"
+      - uses: actions/labeler@v6
+        with:
+          configuration-path: ${{ env.LABELER_FILE }}
