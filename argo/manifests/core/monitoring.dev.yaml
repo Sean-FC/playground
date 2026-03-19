@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring
+  namespace: argo
+spec:
+  project: core
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true
+  source:
+    repoURL: git@github.com:Sean-FC/playground.git
+    targetRevision: feat/monitoring
+    path: argo/charts/monitoring
+    helm:
+      valueFiles:
+        - values.dev.yaml

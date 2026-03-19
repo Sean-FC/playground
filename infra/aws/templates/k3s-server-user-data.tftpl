@@ -97,8 +97,10 @@ tls-san:
   - "${api_endpoint}"
 $${PUBLIC_IP_TLS_SAN}
 
-# Logging
+# Logging + metrics
 debug: false
+supervisor-metrics: true
+etcd-expose-metrics: true
 
 # OIDC config
 kube-apiserver-arg:
