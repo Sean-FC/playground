@@ -1,0 +1,48 @@
+# Type
+adr:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'adrs/*'
+argo-charts:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'argo/charts/**/*'
+argo-manifests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'argo/manifests/**/*'
+apps:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'apps/**/*'
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**/*'
+  - head-branch: ['^ci']
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/Chart.yaml'
+          - '**/Chart.lock'
+data:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'data/**/*'
+infra:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'infra/**/*'
+secrets:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.enc.yaml'
+# Semantic commit labels
+feat:
+  - head-branch: ['^feat']
+fix:
+  - head-branch: ['^fix']
+docs:
+  - head-branch: ['^docs']
+chore:
+  - head-branch: ['^chore']
