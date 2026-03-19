@@ -1,0 +1,11 @@
+apiVersion: v2
+dependencies:
+  - name: trivy-operator
+    repository: oci://ghcr.io/aquasecurity/helm-charts
+    version: 0.32.1
+    alias: trivy
+    condition: trivy.enabled
+description: Helm chart managing the Trivy Operator for image scanning
+name: trivy
+type: application
+version: 0.1.0
