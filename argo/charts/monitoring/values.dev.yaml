@@ -1,0 +1,60 @@
+kps:
+  alertmanager:
+    route:
+      main:
+        enabled: true
+        hostnames:
+          - alert-manager.dev.enervate.io
+  grafana:
+    admin:
+      externalSecret:
+        remoteRef:
+          key: "/dev/eso/grafana-admin"
+    replicas: 1
+    deploymentStrategy:
+      type: Recreate
+    grafana.ini:
+      server:
+        root_url: https://grafana.dev.enervate.io
+    route:
+      main:
+        enabled: true
+        hostnames:
+          - grafana.dev.enervate.io
+  prometheus:
+    prometheusSpec:
+      replicas: 1
+    route:
+      main:
+        enabled: true
+        hostnames:
+          - prometheus.dev.enervate.io
+loki:
+  enabled: true
+  singleBinary:
+    replicas: 1
+  loki:
+    limits_config:
+      retention_period: 24h
+      max_query_lookback: 24h
+    schemaConfig:
+      configs:
+        - from: 2026-03-01
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: loki_index_
+            period: 24h
+    commonConfig:
+      replication_factor: 1
+      path_prefix: /tmp/loki
+      ring:
+        instance_addr: 127.0.0.1
+        kvstore:
+          store: inmemory
+tempo:
+  enabled: true
+  replicas: 1
+fluent:
+  enabled: true

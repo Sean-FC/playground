@@ -1,0 +1,335 @@
+kps:
+  enabled: true
+  fullnameOverride: kps
+  cleanPrometheusOperatorObjectNames: true
+  crds:
+    enabled: true
+  defaultRules:
+    create: true
+    rules:
+      windows: false
+  alertmanager:
+    enabled: true
+    alertmanagerSpec:
+      replicas: 1
+      storage: {}
+      resources:
+        requests:
+          cpu: "25m"
+          memory: "64Mi"
+        limits:
+          cpu: "100m"
+          memory: "128Mi"
+      nodeSelector:
+        kubernetes.io/os: linux
+    config:
+      global: {}
+      route:
+        group_by:
+          - alertname
+          - job
+        group_wait: 1m
+        group_interval: 10m
+        repeat_interval: 48h
+        receiver: "null"
+        routes:
+          - matchers:
+              - alertname = "Watchdog"
+            receiver: "null"
+      receivers:
+        - name: "null"
+    route:
+      main:
+        parentRefs:
+          - group: gateway.networking.k8s.io
+            kind: Gateway
+            name: traefik-gateway
+            namespace: traefik
+            sectionName: websecure
+  grafana:
+    enabled: true
+    fullnameOverride: grafana
+    replicas: 2
+    admin:
+      existingSecret: grafana-admin
+      userKey: admin-user
+      passwordKey: admin-password
+      externalSecret:
+        enabled: true
+        remoteRef:
+          key: ""
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "250m"
+        memory: "256Mi"
+    nodeSelector:
+      kubernetes.io/os: linux
+    defaultDashboardsEnabled: true
+    defaultDashboardsEditable: false
+    additionalDataSources:
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki.monitoring.svc.cluster.local:3100
+        uid: loki
+        jsonData:
+          maxLines: 1000
+      - name: Tempo
+        type: tempo
+        access: proxy
+        url: http://tempo.monitoring.svc.cluster.local:3200
+        uid: tempo
+        jsonData:
+          serviceMap:
+            datasourceUid: prometheus
+          tracesToLogsV2:
+            datasourceUid: loki
+            spanStartTimeShift: "-1h"
+            spanEndTimeShift: "1h"
+            tags:
+              - key: k8s.namespace.name
+                value: namespace_name
+              - key: k8s.pod.name
+                value: pod_name
+              - key: k8s.container.name
+                value: container_name
+          tracesToMetrics:
+            datasourceUid: prometheus
+            spanStartTimeShift: "-1h"
+            spanEndTimeShift: "1h"
+          nodeGraph:
+            enabled: true
+    sidecar:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+        searchNamespace: ALL
+    route:
+      main:
+        parentRefs:
+          - group: gateway.networking.k8s.io
+            kind: Gateway
+            name: traefik-gateway
+            namespace: traefik
+            sectionName: websecure
+  prometheus:
+    enabled: true
+    prometheusSpec:
+      replicas: 2
+      retention: 24h
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: gp3
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 20Gi
+      resources:
+        requests:
+          cpu: "200m"
+          memory: "256Mi"
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
+      nodeSelector:
+        kubernetes.io/os: linux
+    route:
+      main:
+        parentRefs:
+          - group: gateway.networking.k8s.io
+            kind: Gateway
+            name: traefik-gateway
+            namespace: traefik
+            sectionName: websecure
+  prometheusOperator:
+    enabled: true
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "250m"
+        memory: "256Mi"
+    nodeSelector:
+      kubernetes.io/os: linux
+  kube-state-metrics:
+    enabled: true
+  prometheus-node-exporter:
+    enabled: true
+    fullnameOverride: kps-prometheus-node-exporter
+  kubeEtcd:
+    enabled: false
+  kubelet:
+    enabled: true
+  kubeControllerManager:
+    enabled: false
+  kubeScheduler:
+    enabled: false
+  kubeProxy:
+    enabled: false
+loki:
+  enabled: true
+  fullnameOverride: loki
+  deploymentMode: SingleBinary
+  loki:
+    auth_enabled: false
+    ingester:
+      chunk_idle_period: 5m
+      chunk_encoding: snappy # faster + less CPU intensive than gzip
+      wal:
+        flush_on_shutdown: true # prevent any log loss on pod redeploy
+    compactor:
+      retention_enabled: true
+      retention_delete_delay: 2h
+      compaction_interval: 1h
+      delete_request_store: filesystem
+    querier:
+      max_concurrent: 4
+    ui:
+      enabled: false
+    storage:
+      type: filesystem
+      filesystem:
+        chunks_directory: /tmp/loki/chunks
+        rules_directory: /tmp/loki/rules
+    analytics:
+      reporting_enabled: false
+  singleBinary:
+    replicas: 2
+    persistence:
+      enabled: false
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+      limits:
+        cpu: "250m"
+        memory: "512Mi"
+    nodeSelector:
+      kubernetes.io/os: linux
+  test:
+    enabled: false
+  lokiCanary:
+    enabled: false
+  monitoring:
+    dashboards:
+      enabled: true
+    rules:
+      enabled: true
+    serviceMonitor:
+      enabled: true
+  chunksCache:
+    enabled: false
+  resultsCache:
+    enabled: false
+  ruler:
+    enabled: false
+  gateway:
+    enabled: false
+  backend:
+    replicas: 0
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+tempo:
+  enabled: true
+  fullnameOverride: tempo
+  replicas: 2
+  tempo:
+    reportingEnabled: false
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+      limits:
+        cpu: "250m"
+        memory: "512Mi"
+    retention: 24h
+    storage:
+      trace:
+        backend: local
+        local:
+          path: /tmp/tempo/traces
+        wal:
+          path: /tmp/tempo/wal
+    receivers:
+      jaeger:
+        protocols:
+          grpc: null
+          thrift_binary: null
+          thrift_compact: null
+          thrift_http: null
+      opencensus: null
+      otlp:
+        protocols:
+          grpc:
+            endpoint: "0.0.0.0:4317"
+          http:
+            endpoint: "0.0.0.0:4318"
+  persistence:
+    enabled: false
+  nodeSelector:
+    kubernetes.io/os: linux
+  serviceMonitor:
+    enabled: false
+fluent:
+  enabled: true
+  fullnameOverride: fluent
+  testFramework:
+    enabled: false
+  serviceMonitor:
+    enabled: true
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "100m"
+      memory: "128Mi"
+  nodeSelector:
+    kubernetes.io/os: linux
+  # Precaution if enforcing control plane tainting in future
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  config:
+    inputs: |
+      [INPUT]
+          name tail
+          path /var/log/containers/*.log
+          exclude_path /var/log/containers/*_fluent-bit_*.log
+          multiline.parser docker, cri
+          tag kube.*
+          mem_buf_limit 10MB
+          skip_long_lines on
+          refresh_interval 10
+    filters: |
+      [FILTER]
+          name kubernetes
+          match kube.*
+          merge_log on
+          keep_log off
+          k8s-logging.parser on
+          k8s-logging.exclude on
+      [FILTER]
+          name modify
+          match kube.*
+          rename log message
+    outputs: |
+      [OUTPUT]
+          name loki
+          match kube.*
+          host loki.monitoring.svc.cluster.local
+          port 3100
+          labels job=fluent-bit
+          label_keys $kubernetes['namespace_name'],$kubernetes['pod_name'],$kubernetes['container_name'],$kubernetes['host']
+          line_format json
+          auto_kubernetes_labels off
+          retry_limit false
