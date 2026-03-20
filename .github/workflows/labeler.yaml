@@ -1,6 +1,7 @@
 name: "Pull Request Labeler"
 on:
   - pull_request_target
+  - workflow_dispatch
 jobs:
   labeler:
     permissions:
@@ -8,6 +9,7 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@064fe7f3312418007dea2b49a19844a9ee378f49 # v6.0.2
       # Dynamic labels remains an open issue, see: https://github.com/actions/labeler/issues/708
       - name: Build effective labeler config
         shell: bash
@@ -38,6 +40,6 @@ jobs:
           done
 
           echo "LABELER_FILE=$generated_file" >> "$GITHUB_ENV"
-      - uses: actions/labeler@v6
+      - uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b #v6.0.1
         with:
           configuration-path: ${{ env.LABELER_FILE }}
