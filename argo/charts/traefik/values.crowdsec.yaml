@@ -1,0 +1,74 @@
+traefik:
+  # Only capture if we're trying to use waf
+  logs:
+    access:
+      enabled: true
+      format: json
+  experimental:
+    plugins:
+      crowdsec-bouncer-traefik-plugin:
+        moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
+        version: "v1.5.1"
+  # Automatically wire the bouncer middleware
+  additionalArguments:
+    - "--entryPoints.web.http.middlewares=traefik-crowdsec-bouncer@kubernetescrd"
+    - "--entryPoints.websecure.http.middlewares=traefik-crowdsec-bouncer@kubernetescrd"
+  providers:
+    kubernetesCRD:
+      allowCrossNamespace: true
+  volumes:
+    - name: crowdsec-traefik-bouncer
+      mountPath: /var/run/secrets/crowdsec
+      type: secret
+  hostNetwork: true
+  deployment:
+    dnsPolicy: ClusterFirstWithHostNet
+  service:
+    type: ClusterIP
+  ports:
+    web:
+      hostPort: 80
+    websecure:
+      hostPort: 443
+    # Traefik common rebind: https://github.com/prometheus/prometheus/wiki/Default-port-allocations
+    metrics:
+      port: 9982
+      exposedPort: 9982
+  podSecurityContext:
+    runAsUser: 0
+    runAsGroup: 0
+    runAsNonRoot: false
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+      add:
+        - NET_BIND_SERVICE
+crowdsec:
+  bouncer:
+    enabled: true
+    secretName: crowdsec-traefik-bouncer
+    secretKey: traefik-bouncer-key
+    externalSecret:
+      enabled: true
+      remoteRef:
+        key: "/dev/eso/crowdsec"
+    # Ref: https://docs.crowdsec.net/docs/v1.6/appsec/quickstart/traefik/
+    middleware:
+      name: crowdsec-bouncer
+      pluginName: crowdsec-bouncer-traefik-plugin # Name must match above
+      spec:
+        enabled: true
+        crowdsecMode: stream
+        crowdsecLapiScheme: http
+        crowdsecLapiHost: crowdsec-service.crowdsec.svc.cluster.local:8080
+        crowdsecLapiPath: /
+        crowdsecLapiKeyFile: /var/run/secrets/crowdsec/traefik-bouncer-key
+        crowdsecAppsecEnabled: true
+        crowdsecAppsecHost: crowdsec-appsec-service.crowdsec.svc.cluster.local:7422
+        crowdsecAppsecPath: "/"
+        crowdsecAppsecFailureBlock: true
+        crowdsecAppsecUnreachableBlock: true
+        crowdsecAppsecBodyLimit: 10485760

@@ -1,0 +1,100 @@
+crowdsec:
+  enabled: true
+  container_runtime: containerd
+  # Custom
+  externalSecret:
+    enabled: false
+    remoteRef:
+      key: ""
+  secrets:
+    externalSecret:
+      name: "crowdsec-secrets"
+      csLapiSecretKey: csLapiSecret
+      registrationTokenKey: registrationToken
+  config:
+    config.yaml.local: |
+      api:
+        server:
+          auto_registration:
+            enabled: true
+            token: "${REGISTRATION_TOKEN}"
+            allowed_ranges:
+              - "127.0.0.1/32"
+              - "10.10.0.0/18"
+              - "172.20.0.0/16"
+      db_config:
+        flush:
+          agents_autodelete:
+            login_password: 24h
+  lapi:
+    replicas: 1
+    deployAnnotations:
+      reloader.stakater.com/auto: "true"
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    persistentVolume:
+      data:
+        enabled: false
+      config:
+        enabled: false
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        additionalLabels:
+          release: monitoring
+  agent:
+    isDeployment: true
+    replicas: 1
+    deploymentAnnotations:
+      reloader.stakater.com/auto: "true"
+    hostVarLog: false
+    additionalAcquisition:
+      - source: loki
+        url: http://loki.monitoring.svc.cluster.local:3100/
+        query: |
+          {job="fluent-bit", kubernetes_namespace_name="traefik", kubernetes_pod_name=~"traefik-.*"}
+        limit: 100
+        labels:
+          type: traefik
+    env:
+      - name: COLLECTIONS
+        value: "crowdsecurity/traefik"
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+  appsec:
+    enabled: true
+    acquisitions:
+      - source: appsec
+        listen_addr: "0.0.0.0:7422"
+        path: /
+        appsec_configs:
+          - crowdsecurity/appsec-default
+          - crowdsecurity/crs
+          - crowdsecurity/crs-inband
+        labels:
+          type: appsec
+    env:
+      - name: COLLECTIONS
+        value: "crowdsecurity/appsec-virtual-patching crowdsecurity/appsec-crs crowdsecurity/appsec-generic-rules crowdsecurity/appsec-crs-inband"
+    resources:
+      requests:
+        cpu: 50m
+        memory: 196Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi

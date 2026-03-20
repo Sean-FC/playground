@@ -7,7 +7,7 @@ traefik:
     type: LoadBalancer
   providers:
     kubernetesCRD:
-      enabled: false
+      enabled: true
     kubernetesGateway:
       enabled: true
   gateway:
@@ -32,8 +32,12 @@ traefik:
   ports:
     web:
       port: 80
+      observability:
+        accessLogs: true
     websecure:
       port: 443
+      observability:
+        accessLogs: true
   # Only run on control-plane nodes
   tolerations:
     - key: node-role.kubernetes.io/control-plane
@@ -46,3 +50,13 @@ traefik:
           - matchExpressions:
               - key: node-role.kubernetes.io/control-plane
                 operator: Exists
+  metrics:
+    prometheus:
+      disableAPICheck: true
+      service:
+        enabled: true
+      serviceMonitor:
+        enabled: true
+        interval: 60s
+        additionalLabels:
+          release: monitoring
