@@ -1,0 +1,10 @@
+apiVersion: v2
+dependencies:
+  - name: gpu-operator
+    repository: https://helm.ngc.nvidia.com/nvidia
+    version: v25.10.1
+    condition: gpu-operator.enabled
+description: Helm chart managing the nvidia-gpu-operator
+name: nvidia-gpu-operator
+type: application
+version: 0.1.0

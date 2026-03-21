@@ -1,0 +1,70 @@
+gpu-operator:
+  enabled: true
+  operator:
+    runtimeClass: ""
+    annotations: {}
+    resources:
+      limits:
+        cpu: 500m
+        memory: 350Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+    # Only run on control-plane nodes
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: Exists
+  driver:
+    upgradePolicy:
+      autoUpgrade: false
+    usePrecompiled: true
+  dcgmExporter:
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: monitoring
+  node-feature-discovery:
+    worker:
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+  migManager:
+    enabled: false
+  sandboxDevicePlugin:
+    enabled: false
+  vfioManager:
+    enabled: false
+  vgpuDeviceManager:
+    enabled: false
+# Quick test pod
+testPod:
+  enabled: false
+  name: test
+  serviceAccount:
+    annotations: {}
+  image: nvidia/cuda:12.9.1-cudnn-devel-ubuntu22.04
+  imagePullPolicy: IfNotPresent
+  resources:
+    requests:
+      nvidia.com/gpu: 1
+    limits:
+      nvidia.com/gpu: 1
+  command:
+    - /bin/bash
+    - -lc
+    - sleep infinity
+    # `nvidia-smi`
+  affinity: {}
+  tolerations:
+    - key: nvidia.com/gpu
+      operator: Exists
+      effect: NoSchedule
