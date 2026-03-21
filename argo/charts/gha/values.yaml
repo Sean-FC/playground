@@ -1,0 +1,84 @@
+auth:
+  secretName: gha-github-config
+  externalSecret:
+    enabled: false
+    remoteRef:
+      key: ""
+controller:
+  enabled: true
+  fullnameOverride: gha-runner-scale-set-controller
+  flags:
+    logLevel: info
+    watchSingleNamespace: gha
+    updateStrategy: eventual
+    runnerMaxConcurrentReconciles: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: Exists
+  metrics:
+    controllerManagerAddr: ":8080"
+    listenerAddr: ":8080"
+    listenerEndpoint: "/metrics"
+    service:
+      enabled: true
+      port: 8080
+    serviceMonitor:
+      enabled: true
+      interval: 60s
+      labels:
+        release: monitoring
+scale-set:
+  enabled: true
+  githubConfigSecret: gha-github-config
+  controllerServiceAccount:
+    namespace: gha
+    name: gha-runner-scale-set-controller
+  minRunners: 0
+  maxRunners: 2
+  containerMode:
+    type: dind
+  listenerTemplate:
+    spec:
+      containers:
+        - name: listener
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+        karpenter.sh/capacity-type: spot
+        node-role.kubernetes.io/cpu: "true"
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: runner
+          image: ghcr.io/actions/actions-runner:2.333.0
+          command:
+            - /home/runner/run.sh
+          resources:
+            requests:
+              cpu: 300m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi

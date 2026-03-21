@@ -1,0 +1,21 @@
+{{- if and .Values.controller.enabled .Values.controller.metrics .Values.controller.metrics.service.enabled .Values.controller.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "gha.fullname" . }}-controller
+  labels:
+    {{- toYaml .Values.controller.metrics.serviceMonitor.labels | nindent 4 }}
+spec:
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: {{ .Values.controller.metrics.serviceMonitor.interval }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "gha.controllerName" . }}
+      app.kubernetes.io/namespace: {{ .Release.Namespace }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

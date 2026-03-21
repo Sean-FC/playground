@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gha
+  namespace: argo
+spec:
+  project: core
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gha
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - CreateNamespace=true
+      - SkipDryRunOnMissingResource=true
+      - ServerSideApply=true
+  source:
+    repoURL: git@github.com:Sean-FC/playground.git
+    targetRevision: feat/gha
+    path: argo/charts/gha
+    helm:
+      skipCrds: false
+      valueFiles:
+        - values.dev.yaml
