@@ -1,0 +1,15 @@
+apiVersion: v2
+dependencies:
+  - name: gha-runner-scale-set-controller
+    repository: oci://ghcr.io/actions/actions-runner-controller-charts
+    version: 0.14.0
+    alias: controller
+    condition: controller.enabled
+  - name: gha-runner-scale-set
+    repository: oci://ghcr.io/actions/actions-runner-controller-charts
+    version: 0.14.0
+    alias: scale-set
+    condition: scale-set.enabled
+description: Helm chart managing GHA integration
+name: gha
+version: 0.0.1

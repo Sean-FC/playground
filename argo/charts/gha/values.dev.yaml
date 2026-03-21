@@ -1,0 +1,11 @@
+auth:
+  externalSecret:
+    enabled: true
+    remoteRef:
+      key: "/dev/eso/github-actions-runners"
+scale-set:
+  githubConfigUrl: https://github.com/Sean-FC/playground
+  runnerScaleSetName: dev-spot
+  scaleSetLabels:
+    - dev
+    - spot
