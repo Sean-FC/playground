@@ -15,7 +15,14 @@ nodeClasses:
       tags:
         Env: dev
   gpu:
-    enabled: false
+    enabled: true
+    bootstrap:
+      serverUrlParameterName: "/dev-aws/k3s/core/server-url"
+      tokenParameterName: "/dev-aws/k3s/core/token"
+    spec:
+      role: "dev-aws-core-agent-node"
+      tags:
+        Env: dev
 nodePools:
   default:
     enabled: true
@@ -31,5 +38,17 @@ nodePools:
         metadata:
           labels:
             Env: dev
-  gpu:
+  amd64-gpu-default:
+    enabled: true
+    spec:
+      template:
+        metadata:
+          labels:
+            Env: dev
+  amd64-gpu-spot:
     enabled: false
+    spec:
+      template:
+        metadata:
+          labels:
+            Env: dev
