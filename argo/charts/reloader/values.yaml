@@ -4,7 +4,7 @@ reloader:
   reloader:
     # Watch criteria
     watchGlobally: true
-    namespaceSelector: "kubernetes.io/metadata.name in (argo)" # Explicit namespaces
+    namespaceSelector: "kubernetes.io/metadata.name in (argo,crowdsec)" # Explicit namespaces
     # Behavior
     isArgoRollouts: true
     reloadStrategy: "annotations"

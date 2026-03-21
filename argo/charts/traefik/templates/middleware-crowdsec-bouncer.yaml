@@ -1,0 +1,10 @@
+{{- if .Values.crowdsec.bouncer.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ .Values.crowdsec.bouncer.middleware.name }}
+spec:
+  plugin:
+    {{ .Values.crowdsec.bouncer.middleware.pluginName }}:
+{{ toYaml .Values.crowdsec.bouncer.middleware.spec | indent 6 }}
+{{- end }}

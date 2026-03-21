@@ -1,0 +1,11 @@
+apiVersion: v2
+dependencies:
+  - name: crowdsec
+    repository: https://crowdsecurity.github.io/helm-charts
+    version: 0.22.1
+    alias: crowdsec
+    condition: crowdsec.enabled
+description: Helm chart managing Crowdsec for IPS (community blocklist)
+name: crowdsec
+type: application
+version: 0.1.0

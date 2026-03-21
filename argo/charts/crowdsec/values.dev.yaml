@@ -1,0 +1,21 @@
+crowdsec:
+  externalSecret:
+    enabled: true
+    remoteRef:
+      key: "/dev/eso/crowdsec"
+  lapi:
+    env:
+      - name: ENROLL_KEY
+        valueFrom:
+          secretKeyRef:
+            name: crowdsec-secrets
+            key: enrollKey
+      - name: ENROLL_INSTANCE_NAME
+        value: playground-dev
+      - name: ENROLL_TAGS
+        value: "k8s dev traefik"
+      - name: BOUNCER_KEY_traefik
+        valueFrom:
+          secretKeyRef:
+            name: crowdsec-secrets
+            key: traefikBouncerKey
