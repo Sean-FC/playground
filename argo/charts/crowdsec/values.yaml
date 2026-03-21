@@ -76,6 +76,8 @@ crowdsec:
       enabled: true
       serviceMonitor:
         enabled: true
+        additionalLabels:
+          release: monitoring
   appsec:
     enabled: true
     acquisitions:
@@ -98,3 +100,8 @@ crowdsec:
       limits:
         cpu: 500m
         memory: 256Mi
+    metrics:
+      serviceMonitor:
+        enabled: true
+        additionalLabels:
+          release: monitoring

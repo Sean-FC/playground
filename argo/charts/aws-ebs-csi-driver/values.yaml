@@ -15,6 +15,10 @@ aws-ebs-csi-driver:
         operator: Exists
         effect: NoSchedule
     enableNodeLocalVolumes: true
+    serviceMonitor:
+      enabled: true
+      labels:
+        release: monitoring
   node:
     enableWindows: false
     tolerations:

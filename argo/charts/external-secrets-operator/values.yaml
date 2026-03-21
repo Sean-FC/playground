@@ -21,6 +21,10 @@ external-secrets:
       memory: "64Mi"
   nodeSelector:
     kubernetes.io/os: linux
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: monitoring
   webhook:
     create: true
     replicaCount: 1
