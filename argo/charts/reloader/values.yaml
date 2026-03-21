@@ -47,3 +47,5 @@ reloader:
     podMonitor:
       enabled: false
       interval: 60s
+      labels:
+        release: monitoring
