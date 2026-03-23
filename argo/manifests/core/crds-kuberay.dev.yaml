@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crds-kuberay
+  namespace: argo
+spec:
+  project: core
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - ServerSideApply=true
+  source:
+    repoURL: https://github.com/ray-project/kuberay
+    targetRevision: v1.6.0
+    path: helm-chart/kuberay-operator/crds

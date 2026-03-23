@@ -1,0 +1,38 @@
+kuberay-operator:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 512Mi # Manages ~500 ray pods
+  env:
+    # kuberay auto-injects an init container waiting for ray GCS
+    - name: ENABLE_INIT_CONTAINER_INJECTION
+      value: "true"
+    # ray service will provision another cluster while existing runs; can be overwritten in RayServiceSpec
+    - name: ENABLE_ZERO_DOWNTIME
+      value: "true"
+    # cleanup namespace for connected ha cache of ray-service instances
+    - name: ENABLE_GCS_FT_REDIS_CLEANUP
+      value: "true"
+    # enables the injection of readiness and liveness probes into head and workers for robustness
+    - name: ENABLE_PROBES_INJECTION
+      value: "true"
+    # pass the -l option
+    - name: ENABLE_LOGIN_SHELL
+      value: "true"
+  # For the operator
+  metrics:
+    serviceMonitor:
+      enabled: true
+      selector:
+        release: monitoring
+      interval: 10s # AnyScale recommended value
+# For the head + workers in services / clusters managed by the operator
+metrics:
+  podMonitor:
+    enabled: true
+    labels:
+      release: monitoring
+    interval: 10s # AnyScale recommended value
