@@ -15,7 +15,7 @@ spec:
   source:
     repoURL: git@github.com:Sean-FC/playground.git
     targetRevision: main
-    path: argo/charts/nvidia-gpu-operator
+    path: argo/charts/core/nvidia-gpu-operator
     helm:
       valueFiles:
         - values.yaml

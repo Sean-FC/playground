@@ -23,8 +23,9 @@ jobs:
           cp "$DEFAULT_LABELER_FILE" "$generated_file"
 
           # For each folder under charts, add a label matching changed files in that chart.
-          find argo/charts -maxdepth 1 -mindepth 1 -type d | sort | while read -r folder; do
-            label="${folder#argo/charts/}"
+          find argo/charts -maxdepth 3 -mindepth 3 -type f -name Chart.yaml | sort | while read -r chart; do
+            folder="$(dirname "$chart")"
+            label="$(basename "$folder")"
             # Trim label length rather than failing if excessive
             if [ "${#label}" -gt 63 ]; then
               echo "Label is longer than 63 characters: $label"

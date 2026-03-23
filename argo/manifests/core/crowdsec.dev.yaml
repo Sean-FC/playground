@@ -15,7 +15,7 @@ spec:
   source:
     repoURL: git@github.com:Sean-FC/playground.git
     targetRevision: main
-    path: argo/charts/crowdsec
+    path: argo/charts/core/crowdsec
     helm:
       valueFiles:
         - values.dev.yaml

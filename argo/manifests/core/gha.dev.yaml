@@ -16,8 +16,8 @@ spec:
       - ServerSideApply=true
   source:
     repoURL: git@github.com:Sean-FC/playground.git
-    targetRevision: feat/gha
-    path: argo/charts/gha
+    targetRevision: main
+    path: argo/charts/core/gha
     helm:
       skipCrds: false
       valueFiles:

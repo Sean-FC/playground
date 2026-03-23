@@ -15,7 +15,7 @@ spec:
   source:
     repoURL: git@github.com:Sean-FC/playground.git
     targetRevision: main
-    path: argo/charts/argo
+    path: argo/charts/core/argo
     helm:
       valueFiles:
         - values.dev.yaml

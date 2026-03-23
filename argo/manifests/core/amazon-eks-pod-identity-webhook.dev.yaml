@@ -15,7 +15,7 @@ spec:
   source:
     repoURL: git@github.com:Sean-FC/playground.git
     targetRevision: main
-    path: argo/charts/amazon-eks-pod-identity-webhook
+    path: argo/charts/core/amazon-eks-pod-identity-webhook
     helm:
       valueFiles:
         - values.yaml
