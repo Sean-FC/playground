@@ -10,11 +10,11 @@ Fetch the upstream standard-install manifest, replace the existing template and 
 VERSION="0.6.13"
 git clone "https://github.com/aws/amazon-eks-pod-identity-webhook/" pod-irsa
 cd pod-irsa && git checkout "v${VERSION}"
-make prep-config > ../argo/charts/amazon-eks-pod-identity-webhook/updated.yaml
-helm template -n irsa ../argo/charts/amazon-eks-pod-identity-webhook . > prior.yaml
+make prep-config > ../argo/charts/core/amazon-eks-pod-identity-webhook/updated.yaml
+helm template -n irsa ../argo/charts/core/amazon-eks-pod-identity-webhook . > prior.yaml
 # Reconcile the changes
 diff updated.yaml prior.yaml
 # Split the changes as appropriate, custom values have been made for simpler minor version updates
 sed -i '' "s/^appVersion: \".*\"$/appVersion: \"${VERSION}\"/" \
-  argo/charts/amazon-eks-pod-identity-webhook/Chart.yaml
+  argo/charts/core/amazon-eks-pod-identity-webhook/Chart.yaml
 ```

@@ -15,7 +15,7 @@ spec:
   source:
     repoURL: git@github.com:Sean-FC/playground.git
     targetRevision: main
-    path: argo/charts/karpenter
+    path: argo/charts/core/karpenter
     helm:
       valueFiles:
         - values.dev.yaml

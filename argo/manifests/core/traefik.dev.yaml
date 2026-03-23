@@ -15,7 +15,7 @@ spec:
   source:
     repoURL: git@github.com:Sean-FC/playground.git
     targetRevision: main
-    path: argo/charts/traefik
+    path: argo/charts/core/traefik
     helm:
       skipCrds: true
       valueFiles:
