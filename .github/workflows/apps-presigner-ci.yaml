@@ -1,0 +1,173 @@
+name: "Apps - Presigner - CI"
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "apps/presigner/**"
+  workflow_dispatch: {}
+  pull_request:
+    paths:
+      - "apps/presigner/**"
+      - ".github/workflows/apps-presigner-ci.yaml"
+concurrency:
+  group: ${{github.workflow}}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.filter.outputs.app }}
+      test: ${{ steps.filter.outputs.test }}
+    steps:
+      - uses: actions/checkout@064fe7f3312418007dea2b49a19844a9ee378f49 # v6.0.2
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        id: filter
+        with:
+          filters: |
+            app:
+              - 'apps/presigner/src/**'
+              - 'apps/presigner/pyproject.toml'
+              - 'apps/presigner/Dockerfile'
+            test:
+              - 'apps/presigner/tests/**'
+  check-version-bump-package:
+    needs: [changes]
+    if: github.event_name == 'pull_request' && needs.changes.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@064fe7f3312418007dea2b49a19844a9ee378f49 # v6.0.2
+        with:
+          fetch-depth: 0
+      - name: Check base package manifest
+        id: base_manifest
+        shell: bash
+        run: |
+          if git cat-file -e "${{ github.event.pull_request.base.sha }}:apps/presigner/pyproject.toml" 2>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Base branch package manifest found."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Base branch package manifest not found; treating this pull request as the initial package release."
+          fi
+      - name: Check version bump
+        if: steps.base_manifest.outputs.exists == 'true'
+        id: vbump
+        uses: rgryta/Check-Bump@8188e4e435201089ce4df7e8c2d111b4b44dfe52 # v1.1.1
+        with:
+          method: 'toml'
+          path: 'apps/presigner/pyproject.toml'
+      - name: Version bump result not detected
+        if: steps.base_manifest.outputs.exists == 'true' && steps.vbump.outputs.bump != 'true'
+        run: |
+          echo "No version bump detected. Please bump the version in apps/presigner/pyproject.toml."
+          exit 1
+      - name: Version check passed
+        if: steps.base_manifest.outputs.exists == 'false' || steps.vbump.outputs.bump == 'true'
+        run: echo "Initial package release or version bump detected."
+  get-dist-info:
+    runs-on: ubuntu-latest
+    needs: [changes]
+    if: needs.changes.outputs.app == 'true'
+    outputs:
+      project_name: ${{ steps.info.outputs.project_name }}
+      semantic_version: ${{ steps.info.outputs.semantic_version }}
+    steps:
+      - uses: actions/checkout@064fe7f3312418007dea2b49a19844a9ee378f49 # v6.0.2
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version-file: 'apps/presigner/.python-version'
+      - id: info
+        working-directory: ./apps/presigner
+        shell: bash
+        run: |
+          IFS=' ' read -r NAME VERSION <<< "$(uv version)"
+          echo "project_name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "semantic_version=$VERSION" >> "$GITHUB_OUTPUT"
+  docker-build-push:
+    runs-on:
+      - dev
+      - spot
+    needs: [changes, get-dist-info]
+    if: needs.changes.outputs.app == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false)
+    env:
+      ECR_REPO: "266294491328.dkr.ecr.eu-west-1.amazonaws.com"
+    outputs:
+      image_digest: ${{ steps.build_push.outputs.digest }}
+      image_repo: ${{ env.ECR_REPO }}/presigner
+    steps:
+      - name: Make image tags
+        id: meta
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6.0.0
+        with:
+          images: ${{ env.ECR_REPO }}/presigner
+          tags: |
+            type=sha,event=branch,branch=main,priority=300,enable={{is_default_branch}},prefix=main-,format=short
+            type=raw,enable={{is_default_branch}},priority=200,value=v${{ needs.get-dist-info.outputs.semantic_version }}
+            type=raw,event=pr,enable=${{github.event_name == 'pull_request'}},value=build-pr-${{ github.event.pull_request.number }}-${{ github.run_number }}-${{ github.run_attempt }}
+      - uses: aws-actions/amazon-ecr-login@c962da2960ed15f492addc26fffa274485265950 # v2.0.2 as v2.1.0 breaks irsa
+        with:
+          mask-password: 'true'
+      - uses: actions/checkout@064fe7f3312418007dea2b49a19844a9ee378f49 # v6.0.2
+      - uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
+      - uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+      - name: Build and push image
+        id: build_push
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
+        with:
+          context: ./apps/presigner
+          file: ./apps/presigner/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GIT_HASH=${{ github.sha }}
+  sign-image:
+    runs-on:
+      - dev
+      - spot
+    needs: [changes, docker-build-push]
+    if: needs.changes.outputs.app == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false)
+    env:
+      IMAGE_REF: "${{ needs.docker-build-push.outputs.image_repo }}@${{ needs.docker-build-push.outputs.image_digest }}"
+      SIGNER_ARN: "arn:aws:signer:eu-west-1:266294491328:/signing-profiles/dev20260323155803585400000001"
+      AWS_SIGNER_TRUST_POLICY: ${{ secrets.aws_signer_trust_policy }}
+    steps:
+      - uses: notaryproject/notation-action/setup@b6fee73110795d6793253c673bd723f12bcf9bbb # v1.2.2
+      - name: Install AWS Signer Notation plugin
+        shell: bash
+        run: |
+          case "$(uname -m)" in
+            x86_64) plugin_arch="amd64" ;;
+            aarch64|arm64) plugin_arch="arm64" ;;
+            *)
+              echo "Unsupported runner architecture: $(uname -m)"
+              exit 1
+              ;;
+          esac
+          curl -fsSLo "aws-signer-notation-cli_${plugin_arch}.deb" \
+            "https://d2hvyiie56hcat.cloudfront.net/linux/${plugin_arch}/installer/deb/latest/aws-signer-notation-cli_${plugin_arch}.deb"
+          sudo dpkg -i "aws-signer-notation-cli_${plugin_arch}.deb"
+      - uses: aws-actions/amazon-ecr-login@c962da2960ed15f492addc26fffa274485265950 # v2.0.2 as v2.1.0 breaks irsa
+        with:
+          mask-password: 'true'
+      - name: Sign pushed image
+        shell: bash
+        run: |
+          notation sign "${IMAGE_REF}" \
+            --plugin "com.amazonaws.signer.notation.plugin" \
+            --id "${SIGNER_ARN}"
+      # TODO: create trust policy + auto import
+      - name: Verify image signature
+        if: ${{ env.AWS_SIGNER_TRUST_POLICY != '' }}
+        shell: bash
+        run: |
+          policy_file="$RUNNER_TEMP/signer-policy.json"
+          echo "${AWS_SIGNER_TRUST_POLICY}" | base64 -d > "$policy_file"
+          notation policy import "$policy_file" --force
+          notation verify "${IMAGE_REF}"
+      - name: Verification skipped
+        if: ${{ env.AWS_SIGNER_TRUST_POLICY == '' }}
+        run: echo "Skipping notation verify because aws_signer_trust_policy is not configured."
