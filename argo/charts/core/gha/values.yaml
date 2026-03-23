@@ -4,6 +4,10 @@ auth:
     enabled: false
     remoteRef:
       key: ""
+serviceAccount:
+  create: true
+  name: gha-runner
+  annotations: {}
 controller:
   enabled: true
   fullnameOverride: gha-runner-scale-set-controller
@@ -42,7 +46,7 @@ controller:
       interval: 60s
       labels:
         release: monitoring
-scale-set:
+default-scale-set:
   enabled: true
   githubConfigSecret: gha-github-config
   controllerServiceAccount:
@@ -65,6 +69,7 @@ scale-set:
               memory: 128Mi
   template:
     spec:
+      serviceAccountName: gha-runner
       nodeSelector:
         kubernetes.io/os: linux
         karpenter.sh/capacity-type: spot
@@ -80,5 +85,5 @@ scale-set:
               cpu: 300m
               memory: 512Mi
             limits:
-              cpu: "1"
-              memory: 1Gi
+              cpu: "2"
+              memory: 2Gi

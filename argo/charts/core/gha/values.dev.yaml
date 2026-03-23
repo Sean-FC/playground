@@ -3,7 +3,10 @@ auth:
     enabled: true
     remoteRef:
       key: "/dev/eso/github-actions-runners"
-scale-set:
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::266294491328:role/dev-default-gha-runner"
+default-scale-set:
   githubConfigUrl: https://github.com/Sean-FC/playground
   runnerScaleSetName: dev-spot
   scaleSetLabels:
