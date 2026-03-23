@@ -26,6 +26,13 @@ argo-cd:
       type: ClusterIP
     ingress:
       enabled: false
+    httproute:
+      parentRefs:
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: traefik-gateway
+          namespace: traefik
+          sectionName: websecure
   extraObjects:
     - apiVersion: argoproj.io/v1alpha1
       kind: AppProject
@@ -55,8 +62,43 @@ argo-cd:
             server: https://kubernetes.default.svc
         sourceRepos:
           - "*"
+    - apiVersion: argoproj.io/v1alpha1
+      kind: AppProject
+      metadata:
+        name: data
+        namespace: argo
+      spec:
+        clusterResourceWhitelist:
+          - group: "*"
+            kind: "*"
+        destinations:
+          - namespace: "*"
+            server: https://kubernetes.default.svc
+        sourceRepos:
+          - "*"
+    - apiVersion: argoproj.io/v1alpha1
+      kind: AppProject
+      metadata:
+        name: ml
+        namespace: argo
+      spec:
+        clusterResourceWhitelist:
+          - group: "*"
+            kind: "*"
+        destinations:
+          - namespace: "*"
+            server: https://kubernetes.default.svc
+        sourceRepos:
+          - "*"
 argocd-image-updater:
   enabled: false
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
   extraArgs:
     - --interval
     - 1m
@@ -65,8 +107,10 @@ argocd-image-updater:
   authScripts:
     enabled: true
     scripts:
-      auth.sh: |
+      ecr.sh: |
         #!/usr/bin/env sh
         aws ecr get-authorization-token --output text --query 'authorizationData[].authorizationToken' | base64 -d
   serviceAccount:
     create: true
+    annotations:
+      eks.amazonaws.com/audience: "sts.amazonaws.com"
