@@ -110,11 +110,10 @@ data "aws_iam_policy_document" "default_gha_runner" {
     sid    = "SignerNotation"
     effect = "Allow"
     actions = [
-      "signer:PutSigningProfile",
       "signer:SignPayload",
       "signer:GetRevocationStatus",
     ]
-    resources = ["*"]
+    resources = [aws_signer_signing_profile.notation_oci.arn]
   }
 
   statement {
