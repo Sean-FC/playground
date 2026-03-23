@@ -436,3 +436,7 @@ output "k3s_api_endpoint" {
 output "k3s_remote_kubeconfig_path" {
   value = var.k3s_enabled ? "ssm:${aws_instance.k3s_server[0].id}:/etc/rancher/k3s/k3s-remote.yaml" : null
 }
+
+output "k3s_oidc_provider_arn" {
+  value = aws_iam_openid_connect_provider.k3s.arn
+}
