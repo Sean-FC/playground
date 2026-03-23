@@ -1,0 +1,14 @@
+[project]
+name = "presigner"
+version = "0.1.0"
+description = "Small toy application for presigning."
+authors = [{ name = "SeanC", email = "sean.francis.campbell@gmail.com" }]
+requires-python = ">=3.13"
+readme = "README.md"
+dependencies = [
+    "fastapi[standard]>=0.135.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
