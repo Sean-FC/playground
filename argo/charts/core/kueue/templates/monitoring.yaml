@@ -1,0 +1,92 @@
+{{- if .Values.monitoring.serviceMonitor.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "kueue.fullname" . }}-prometheus
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{ include "kueue.labels" . | indent 4 }}
+    app.kubernetes.io/component: metrics
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - endpoints
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "kueue.fullname" . }}-prometheus
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{ include "kueue.labels" . | indent 4 }}
+    app.kubernetes.io/component: metrics
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "kueue.fullname" . }}-prometheus
+subjects:
+  - kind: ServiceAccount
+    name: prometheus-k8s
+    namespace: {{ .Values.kueue.metrics.prometheusNamespace }}
+  - kind: ServiceAccount
+    name: prometheus-operator
+    namespace: {{ .Values.kueue.metrics.prometheusNamespace }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "kueue.fullname" . }}-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+{{ include "kueue.labels" . | indent 4 }}
+    app.kubernetes.io/component: metrics
+{{- range $key, $value := .Values.monitoring.serviceMonitor.labels }}
+    {{ $key }}: {{ $value | quote }}
+{{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+{{ include "kueue.selectorLabels" . | indent 6 }}
+      control-plane: controller-manager
+      app.kubernetes.io/component: metrics-service
+  endpoints:
+    - path: /metrics
+      port: https
+      scheme: https
+      interval: {{ .Values.monitoring.serviceMonitor.interval }}
+      bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+      tlsConfig:
+        insecureSkipVerify: true
+        #ca:
+        #  secret:
+        #    key: ca.crt
+        #    name: {{ include "kueue.fullname" . }}-metrics-server-cert
+        #serverName: {{ include "kueue.fullname" . }}-controller-manager-metrics-service.{{ .Release.Namespace }}.svc
+{{- end }}

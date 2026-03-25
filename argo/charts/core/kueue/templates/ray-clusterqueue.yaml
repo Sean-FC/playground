@@ -1,0 +1,24 @@
+{{- if .Values.rayClusterQueue.enabled }}
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ClusterQueue
+metadata:
+  name: {{ .Values.rayClusterQueue.name }}
+  labels:
+    {{- include "kueue.labels" . | nindent 4 }}
+spec:
+  cohort: {{ .Values.rayClusterQueue.cohortName }}
+  namespaceSelector:
+    {{- toYaml .Values.rayClusterQueue.namespaceSelector | nindent 4 }}
+  flavorFungibility:
+    {{- toYaml .Values.rayClusterQueue.flavorFungibility | nindent 4 }}
+  resourceGroups:
+    - coveredResources:
+        - {{ .Values.gpuResource.name }}
+      flavors:
+{{- range .Values.rayClusterQueue.quotas }}
+        - name: {{ .flavor }}
+          resources:
+            - name: {{ $.Values.gpuResource.name }}
+              nominalQuota: {{ .nominalQuota | quote }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,20 @@
+kueue:
+  controllerManager:
+    replicas: 1
+  kueueViz:
+    backend:
+      env:
+        - name: KUEUEVIZ_ALLOWED_ORIGINS
+          value: https://kueueviz.dev.enervate.io
+    frontend:
+      env:
+        - name: REACT_APP_WEBSOCKET_URL
+          value: wss://kueueviz-backend.dev.enervate.io
+httpRoute:
+  enabled: true
+  frontend:
+    hostnames:
+      - kueueviz.dev.enervate.io
+  backend:
+    hostnames:
+      - kueueviz-backend.dev.enervate.io

@@ -1,0 +1,144 @@
+kueue:
+  enabled: true
+  fullnameOverride: kueue
+  enablePrometheus: false
+  enableCertManager: false
+  enableKueueViz: false
+  controllerManager:
+    manager:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi
+    nodeSelector:
+      kubernetes.io/os: linux
+    podDisruptionBudget:
+      enabled: false
+  managerConfig:
+    controllerManagerConfigYaml: |-
+      apiVersion: config.kueue.x-k8s.io/v1beta2
+      kind: Configuration
+      health:
+        healthProbeBindAddress: :8081
+      metrics:
+        bindAddress: :8443
+      webhook:
+        port: 9443
+      leaderElection:
+        leaderElect: true
+        resourceName: c1f6bfd2.kueue.x-k8s.io
+      controller:
+        groupKindConcurrency:
+          Workload.kueue.x-k8s.io: 5
+          LocalQueue.kueue.x-k8s.io: 1
+          ClusterQueue.kueue.x-k8s.io: 1
+          ResourceFlavor.kueue.x-k8s.io: 1
+      clientConnection:
+        qps: 50
+        burst: 100
+      integrations:
+        frameworks:
+          - ray.io/rayjob
+          - ray.io/raycluster
+  metrics:
+    prometheusNamespace: monitoring
+  kueueViz:
+    backend:
+      env: []
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 250m
+          memory: 256Mi
+    frontend:
+      env: []
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 250m
+          memory: 128Mi
+monitoring:
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    labels:
+      release: monitoring
+httpRoute:
+  enabled: false
+  annotations: {}
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+  frontend:
+    hostnames: []
+  backend:
+    hostnames: []
+  matches:
+    - path:
+        type: PathPrefix
+        value: /
+gpuResource:
+  name: nvidia.com/gpu
+  flavors:
+    - name: gpu-spot
+      nodeLabels:
+        node-role.kubernetes.io/gpu: "true"
+        karpenter.sh/capacity-type: spot
+    - name: gpu-ondemand
+      nodeLabels:
+        node-role.kubernetes.io/gpu: "true"
+        karpenter.sh/capacity-type: on-demand
+gpuCohort:
+  name: gpu-shared
+  quotas:
+    - flavor: gpu-spot
+      nominalQuota: "2"
+    - flavor: gpu-ondemand
+      nominalQuota: "1"
+rayClusterQueue:
+  enabled: true
+  name: ray-gpu-shared
+  cohortName: gpu-shared
+  namespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: ray
+  flavorFungibility:
+    whenCanBorrow: TryNextFlavor
+    whenCanPreempt: MayStopSearch
+  quotas:
+    - flavor: gpu-spot
+      nominalQuota: "0"
+    - flavor: gpu-ondemand
+      nominalQuota: "0"
+generalClusterQueue:
+  enabled: true
+  name: gpu-shared
+  cohortName: gpu-shared
+  namespaceSelector:
+    matchExpressions:
+      - key: kubernetes.io/metadata.name
+        operator: NotIn
+        values:
+          - ray
+          - kube-system
+  flavorFungibility:
+    whenCanBorrow: TryNextFlavor
+    whenCanPreempt: MayStopSearch
+  quotas:
+    - flavor: gpu-spot
+      nominalQuota: "0"
+    - flavor: gpu-ondemand
+      nominalQuota: "0"
+localQueues:
+  - namespace: ray
+    clusterQueueName: ray-gpu-shared

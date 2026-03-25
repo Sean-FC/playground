@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kueue
+  namespace: argo
+spec:
+  project: core
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kueue
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  source:
+    repoURL: git@github.com:Sean-FC/playground.git
+    targetRevision: feat/kueue
+    path: argo/charts/core/kueue
+    helm:
+      valueFiles:
+        - values.dev.yaml

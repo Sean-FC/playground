@@ -1,0 +1,12 @@
+{{- range .Values.localQueues }}
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: LocalQueue
+metadata:
+  name: {{ .clusterQueueName }}
+  namespace: {{ .namespace }}
+  labels:
+    {{- include "kueue.labels" $ | nindent 4 }}
+spec:
+  clusterQueue: {{ .clusterQueueName }}
+---
+{{- end }}

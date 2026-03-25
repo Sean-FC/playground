@@ -1,0 +1,49 @@
+{{- if and .Values.httpRoute.enabled .Values.kueue.enableKueueViz .Values.httpRoute.frontend.hostnames }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "kueue.fullname" . }}-frontend
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.httpRoute.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "kueue.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    {{- toYaml .Values.httpRoute.parentRefs | nindent 4 }}
+  hostnames:
+    {{- toYaml .Values.httpRoute.frontend.hostnames | nindent 4 }}
+  rules:
+    - matches:
+        {{- toYaml .Values.httpRoute.matches | nindent 8 }}
+      backendRefs:
+        - name: {{ include "kueue.fullname" . }}-kueueviz-frontend
+          port: 8080
+{{- end }}
+---
+{{- if and .Values.httpRoute.enabled .Values.kueue.enableKueueViz .Values.httpRoute.backend.hostnames }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ include "kueue.fullname" . }}-backend
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.httpRoute.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "kueue.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    {{- toYaml .Values.httpRoute.parentRefs | nindent 4 }}
+  hostnames:
+    {{- toYaml .Values.httpRoute.backend.hostnames | nindent 4 }}
+  rules:
+    - matches:
+        {{- toYaml .Values.httpRoute.matches | nindent 8 }}
+      backendRefs:
+        - name: {{ include "kueue.fullname" . }}-kueueviz-backend
+          port: 8080
+{{- end }}
