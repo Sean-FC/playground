@@ -50,11 +50,14 @@ chmod 644 /etc/rancher/k3s/tls/sa-signer-pkcs8.pub
 # Networking info
 IMDS_TOKEN="$(curl -sX PUT "http://169.254.169.254/latest/api/token" \
   -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")"
-
 PRIVATE_IP="$(curl -sf -H "X-aws-ec2-metadata-token: $${IMDS_TOKEN}" \
   http://169.254.169.254/latest/meta-data/local-ipv4)"
 PUBLIC_IP="$(curl -sf -H "X-aws-ec2-metadata-token: $${IMDS_TOKEN}" \
   http://169.254.169.254/latest/meta-data/public-ipv4 || true)"
+INSTANCE_TYPE="$(curl -sf -H "X-aws-ec2-metadata-token: $${IMDS_TOKEN}" \
+  http://169.254.169.254/latest/meta-data/instance-type)"
+INSTANCE_ID="$(curl -sf -H "X-aws-ec2-metadata-token: $${IMDS_TOKEN}" \
+          http://169.254.169.254/latest/meta-data/instance-id)"
 AVAILABILITY_ZONE="$(curl -sf -H "X-aws-ec2-metadata-token: $${IMDS_TOKEN}" \
   http://169.254.169.254/latest/meta-data/placement/availability-zone)"
 AWS_REGION="$${AVAILABILITY_ZONE%?}"
@@ -73,6 +76,7 @@ token: "${token}"
 # Services
 disable:
   - traefik
+disable-cloud-controller: true
 
 # Node settings
 node-name: "${node_name}"
@@ -80,6 +84,9 @@ node-label:
   - "environment=${env}"
   - "topology.kubernetes.io/region=$${AWS_REGION}"
   - "topology.kubernetes.io/zone=$${AVAILABILITY_ZONE}"
+  - "node.kubernetes.io/instance-type=$${INSTANCE_TYPE}"
+  - "beta.kubernetes.io/instance-type=$${INSTANCE_TYPE}"
+
 cluster-init: true
 
 # Networking
@@ -101,6 +108,11 @@ $${PUBLIC_IP_TLS_SAN}
 debug: false
 supervisor-metrics: true
 etcd-expose-metrics: true
+
+# Kubelet
+kubelet-arg:
+  - "cloud-provider=external"
+  - "provider-id=aws:///$${AVAILABILITY_ZONE}/$${INSTANCE_ID}"
 
 # OIDC config
 kube-apiserver-arg:
