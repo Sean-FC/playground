@@ -1,0 +1,9 @@
+apiVersion: v2
+dependencies:
+  - name: oauth2-proxy
+    alias: oauth2
+    repository: https://oauth2-proxy.github.io/manifests
+    version: 10.3.0
+description: A Helm chart for managing oauth2-proxy
+name: oauth2-proxy
+version: 0.1.0

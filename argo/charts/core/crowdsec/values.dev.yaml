@@ -3,6 +3,16 @@ crowdsec:
     enabled: true
     remoteRef:
       key: "/dev/eso/crowdsec"
+  appsec:
+    configs:
+      oauth2-proxy-callback-allow.yaml: |
+        name: custom/oauth2-proxy-callback-allow
+        on_match:
+          - filter: req.Host == "oauth2-proxy.dev.enervate.io" && req.URL.Path == "/oauth2/callback"
+            apply:
+              - CancelEvent()
+              - CancelAlert()
+              - SetRemediation("allow")
   lapi:
     env:
       - name: ENROLL_KEY

@@ -1,0 +1,59 @@
+oauth2:
+  fullnameOverride: oauth2-proxy
+  config:
+    existingSecret: oauth2-proxy
+    requiredSecretKeys:
+      - client-id
+      - client-secret
+      - cookie-secret
+    configFile: |-
+      provider = "google"
+      provider_display_name = "Google"
+      redirect_url = "https://{{ index .Values.gatewayApi.hostnames 0 }}/oauth2/callback"
+      upstreams = [ "static://202" ]
+      scope = "openid email profile"
+      reverse_proxy = true
+      cookie_secure = true
+      cookie_csrf_per_request = true
+      set_xauthrequest = true
+      set_authorization_header = true
+      pass_authorization_header = true
+      pass_access_token = false
+  extraArgs:
+    skip-provider-button: "true"
+  deploymentAnnotations:
+    reloader.stakater.com/auto: "true"
+  resources:
+    requests:
+      cpu: "25m"
+      memory: "64Mi"
+    limits:
+      cpu: "100m"
+      memory: "128Mi"
+  podDisruptionBudget:
+    enabled: false
+  nodeSelector:
+    kubernetes.io/os: linux
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      prometheusInstance: monitoring
+      labels:
+        release: monitoring
+  gatewayApi:
+    enabled: true
+    gatewayRef:
+      group: gateway.networking.k8s.io
+      kind: Gateway
+      name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+    hostnames:
+      - oauth2-proxy.example.com
+oauth2ProxyExternalSecret:
+  remoteRef:
+    key: ""
+oauth2ProxyAccesslistExternalSecret:
+  remoteRef:
+    key: ""
