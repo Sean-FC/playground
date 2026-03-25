@@ -1,0 +1,2 @@
+kuberay-operator:
+  enabled: true

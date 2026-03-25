@@ -1,0 +1,60 @@
+# Source: https://github.com/ray-project/kuberay/blob/master/config/prometheus/podMonitor.yaml
+# ServiceMonitor has a risk of duplicates, hence PodMonitor
+{{- if .Values.metrics.podMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: ray-workers-monitor
+{{- if .Values.metrics.podMonitor.labels }}
+  labels:
+{{ toYaml .Values.metrics.podMonitor.labels | indent 4}}
+{{- end }}
+spec:
+  jobLabel: ray-workers
+  selector:
+    matchLabels:
+      ray.io/node-type: worker
+  podMetricsEndpoints:
+  - port: metrics
+    relabelings:
+    - action: replace
+      sourceLabels: [__meta_kubernetes_pod_label_ray_io_cluster]
+      targetLabel: ray_io_cluster
+    interval: {{ .Values.metrics.podMonitor.interval }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: ray-head-monitor
+{{- if .Values.metrics.podMonitor.labels }}
+  labels:
+{{ toYaml .Values.metrics.podMonitor.labels | indent 4}}
+{{- end }}
+spec:
+  jobLabel: ray-head
+  selector:
+    matchLabels:
+      ray.io/node-type: head
+  podMetricsEndpoints:
+    - port: metrics
+      relabelings:
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_label_ray_io_cluster
+          targetLabel: ray_io_cluster
+      interval: {{ .Values.metrics.podMonitor.interval }}
+    - port: as-metrics
+      relabelings:
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_label_ray_io_cluster
+          targetLabel: ray_io_cluster
+      interval: {{ .Values.metrics.podMonitor.interval }}
+    - port: dash-metrics
+      relabelings:
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_label_ray_io_cluster
+          targetLabel: ray_io_cluster
+      interval: {{ .Values.metrics.podMonitor.interval }}
+{{- end }}
