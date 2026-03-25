@@ -88,6 +88,7 @@ crowdsec:
           - crowdsecurity/appsec-default
           - crowdsecurity/crs
           - crowdsecurity/crs-inband
+          - custom/oauth2-proxy-callback-allow # deferred to inheriting env
         labels:
           type: appsec
     env:

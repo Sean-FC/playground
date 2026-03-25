@@ -1,0 +1,15 @@
+oauth2:
+  replicaCount: 1
+  authenticatedEmailsFile:
+    enabled: true
+    persistence: secret
+    template: oauth2-proxy-accesslist
+  gatewayApi:
+    hostnames:
+      - oauth2-proxy.dev.enervate.io
+oauth2ProxyExternalSecret:
+  remoteRef:
+    key: "/dev/eso/oauth2-proxy/google"
+oauth2ProxyAccesslistExternalSecret:
+  remoteRef:
+    key: "/dev/eso/oauth2-proxy/common"
