@@ -2,7 +2,7 @@ kueue:
   enabled: true
   fullnameOverride: kueue
   enablePrometheus: false
-  enableCertManager: false
+  enableCertManager: true
   enableKueueViz: false
   controllerManager:
     manager:
