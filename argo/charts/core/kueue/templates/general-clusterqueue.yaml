@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "kueue.labels" . | nindent 4 }}
 spec:
-  cohort: {{ .Values.generalClusterQueue.cohortName }}
+  cohortName: {{ .Values.generalClusterQueue.cohortName }}
   namespaceSelector:
     {{- toYaml .Values.generalClusterQueue.namespaceSelector | nindent 4 }}
   flavorFungibility:
