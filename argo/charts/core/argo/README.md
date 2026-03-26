@@ -7,7 +7,7 @@ It's been configured primarily with:
 - single-replica control plane sized for a small cluster
 - an `AppProject` named `core` for 'platform-level' applications and another named `apps` for general applications
 - domain value has been configured, but a cluster ingress controller is not yet available
-- image-updater has been configured, but similarly disabled till ecr integration in place
+- image-updater ECR auth uses External Secrets: IRSA on the updater service account creates an `ECRAuthorizationToken`, an `ExternalSecret` materializes a Docker pull secret, and image-updater is configured to use that `pullsecret`
 
 ## Installation
 ```bash

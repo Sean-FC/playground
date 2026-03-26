@@ -90,8 +90,13 @@ argo-cd:
             server: https://kubernetes.default.svc
         sourceRepos:
           - "*"
-argocd-image-updater:
+updater:
   enabled: false
+  fullnameOverride: argocd-image-updater
+  ecr:
+    enabled: false
+    secretName: ecr-docker
+    refreshInterval: 11h
   resources:
     requests:
       cpu: 10m
@@ -103,14 +108,10 @@ argocd-image-updater:
     - --interval
     - 1m
   config:
-    logLevel: "warn"
-  authScripts:
-    enabled: true
-    scripts:
-      ecr.sh: |
-        #!/usr/bin/env sh
-        aws ecr get-authorization-token --output text --query 'authorizationData[].authorizationToken' | base64 -d
+    "log.level": "warn"
+  podAnnotations: {}
   serviceAccount:
+    name: argo-image-updater
     create: true
     annotations:
       eks.amazonaws.com/audience: "sts.amazonaws.com"

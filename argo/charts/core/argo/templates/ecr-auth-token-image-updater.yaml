@@ -1,0 +1,24 @@
+{{- if .Values.updater.ecr.enabled }}
+{{- $registry := dict }}
+{{- range .Values.updater.config.registries }}
+{{- if eq .name "ECR" }}
+{{- $registry = . }}
+{{- end }}
+{{- end }}
+{{- if not (get $registry "api_url") }}
+{{- fail "updater.ecr.enabled requires an updater.config.registries entry with name: ECR" }}
+{{- end }}
+{{- $host := trimPrefix "https://" (get $registry "api_url") }}
+{{- $region := regexReplaceAll "^.*\\.ecr\\.([^.]+)\\.amazonaws\\.com$" $host "$1" }}
+apiVersion: generators.external-secrets.io/v1alpha1
+kind: ECRAuthorizationToken
+metadata:
+  name: ecr-auth-token
+  namespace: {{ .Release.Namespace }}
+spec:
+  region: {{ $region }}
+  auth:
+    jwt:
+      serviceAccountRef:
+        name: {{ .Values.updater.serviceAccount.name }}
+{{- end }}
