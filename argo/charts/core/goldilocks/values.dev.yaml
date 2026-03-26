@@ -1,0 +1,7 @@
+goldilocks:
+  dashboard:
+    replicaCount: 1
+    httpRoute:
+      enabled: true
+      hostnames:
+        - goldilocks.dev.enervate.io

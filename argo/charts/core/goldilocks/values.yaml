@@ -1,0 +1,95 @@
+goldilocks:
+  enabled: true
+  image:
+    tag: v4.14.18
+    pullPolicy: IfNotPresent
+  controller:
+    revisionHistoryLimit: 2
+    flags:
+      on-by-default: true
+    resources:
+      requests:
+        cpu: 25m
+        memory: 256Mi
+      limits:
+        cpu: 100m
+        memory: 512Mi
+  dashboard:
+    revisionHistoryLimit: 2
+    resources:
+      requests:
+        cpu: 25m
+        memory: 256Mi
+      limits:
+        cpu: 100m
+        memory: 512Mi
+    httpRoute:
+      parentRefs:
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: traefik-gateway
+          namespace: traefik
+          sectionName: websecure
+  vpa:
+    enabled: true
+    fullnameOverride: vpa
+    recommender:
+      enabled: true
+      revisionHistoryLimit: 2
+      extraArgs:
+        pod-recommendation-min-cpu-millicores: 10
+        pod-recommendation-min-memory-mb: 64
+        prometheus-address: http://kps-prometheus.monitoring.svc.cluster.local:9090
+        storage: prometheus
+        prometheus-cadvisor-job-name: kubelet
+        pod-namespace-label: namespace
+        pod-name-label: pod
+        container-namespace-label: namespace
+        container-pod-name-label: pod
+        container-name-label: container
+        metric-for-pod-labels: kube_pod_labels{job="kube-state-metrics"}[7d]
+        v: "2"
+      image:
+        pullPolicy: IfNotPresent
+      resources:
+        requests:
+          cpu: 50m
+          memory: 512Mi
+        limits:
+          cpu: 250m
+          memory: 1Gi
+      podMonitor:
+        enabled: true
+        labels:
+          release: monitoring
+    updater:
+      enabled: false
+      revisionHistoryLimit: 2
+      image:
+        pullPolicy: IfNotPresent
+      resources:
+        requests:
+          cpu: 50m
+          memory: 256Mi
+        limits:
+          cpu: 250m
+          memory: 512Mi
+      podMonitor:
+        enabled: true
+        labels:
+          release: monitoring
+    admissionController:
+      enabled: false
+      revisionHistoryLimit: 2
+      image:
+        pullPolicy: IfNotPresent
+      resources:
+        requests:
+          cpu: 50m
+          memory: 256Mi
+        limits:
+          cpu: 250m
+          memory: 512Mi
+  # Continuing to use the embedded K3s metrics-server for now
+  metrics-server:
+    enabled: false

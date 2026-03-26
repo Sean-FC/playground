@@ -1,0 +1,9 @@
+apiVersion: v2
+dependencies:
+  - name: goldilocks
+    repository: https://charts.fairwinds.com/stable
+    version: 10.3.0
+    condition: goldilocks.enabled
+description: A Helm chart for managing Goldilocks + VPA
+name: goldilocks
+version: 0.1.0
