@@ -39,6 +39,9 @@ kueue:
       clientConnection:
         qps: 50
         burst: 100
+      managedJobsNamespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ray
       integrations:
         frameworks:
           - ray.io/rayjob
