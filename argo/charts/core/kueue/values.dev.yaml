@@ -11,7 +11,7 @@ kueue:
         - name: REACT_APP_WEBSOCKET_URL
           value: wss://kueueviz-backend.dev.enervate.io
 httpRoute:
-  enabled: true
+  enabled: false
   frontend:
     hostnames:
       - kueueviz.dev.enervate.io

@@ -69,7 +69,7 @@ kueue:
           memory: 128Mi
 monitoring:
   serviceMonitor:
-    enabled: true
+    enabled: false
     interval: 30s
     labels:
       release: monitoring
@@ -109,7 +109,7 @@ gpuCohort:
     - flavor: gpu-ondemand
       nominalQuota: "1"
 rayClusterQueue:
-  enabled: true
+  enabled: false
   name: ray-gpu-shared
   cohortName: gpu-shared
   namespaceSelector:
@@ -124,7 +124,7 @@ rayClusterQueue:
     - flavor: gpu-ondemand
       nominalQuota: "0"
 generalClusterQueue:
-  enabled: true
+  enabled: false
   name: gpu-shared
   cohortName: gpu-shared
   namespaceSelector:
@@ -142,6 +142,6 @@ generalClusterQueue:
       nominalQuota: "0"
     - flavor: gpu-ondemand
       nominalQuota: "0"
-localQueues:
-  - namespace: ray
-    clusterQueueName: ray-gpu-shared
+localQueues: []
+#- namespace: ray
+#  clusterQueueName: ray-gpu-shared
