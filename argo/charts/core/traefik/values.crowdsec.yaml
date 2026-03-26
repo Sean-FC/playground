@@ -10,9 +10,9 @@ traefik:
         moduleName: "github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin"
         version: "v1.5.1"
   # Automatically wire the bouncer middleware
-  additionalArguments:
-    - "--entryPoints.web.http.middlewares=traefik-crowdsec-bouncer@kubernetescrd"
-    - "--entryPoints.websecure.http.middlewares=traefik-crowdsec-bouncer@kubernetescrd"
+  #additionalArguments:
+  #  - "--entryPoints.web.http.middlewares=traefik-crowdsec-bouncer@kubernetescrd"
+  #  - "--entryPoints.websecure.http.middlewares=traefik-crowdsec-bouncer@kubernetescrd"
   providers:
     kubernetesCRD:
       allowCrossNamespace: true
