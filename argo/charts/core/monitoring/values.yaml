@@ -159,6 +159,9 @@ kps:
       kubernetes.io/os: linux
   kube-state-metrics:
     enabled: true
+    metricLabelsAllowlist:
+      - deployments=[*]
+      - pods=[*]
   prometheus-node-exporter:
     enabled: true
     fullnameOverride: kps-prometheus-node-exporter
