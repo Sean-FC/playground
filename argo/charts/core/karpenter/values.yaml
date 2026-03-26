@@ -50,6 +50,14 @@ nodeClasses:
 
         dnf update -y
 
+        # K3s can exhaust the default inotify limits on busy nodes even when
+        # the generated systemd unit already sets a high LimitNOFILE.
+        cat >/etc/sysctl.d/90-k3s-inotify.conf <<'EOF'
+        fs.inotify.max_user_instances = 8192
+        fs.inotify.max_user_watches = 1048576
+        EOF
+        sysctl -p /etc/sysctl.d/90-k3s-inotify.conf
+
         if ! command -v aws >/dev/null 2>&1; then
           dnf install -y awscli
         fi
