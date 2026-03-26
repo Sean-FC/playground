@@ -1,0 +1,20 @@
+{{- if .Values.imageUpdater.enabled }}
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: {{ include "presigner.fullname" . }}
+  namespace: argo
+spec:
+  namespace: argo
+  applicationRefs:
+    - namePattern: {{ include "presigner.fullname" . }}
+      images:
+        - alias: {{ include "presigner.fullname" . }}
+          imageName: {{ .Values.image.repository }}
+          commonUpdateSettings:
+            updateStrategy: "newest-build"
+            allowTags: "regexp:^main-[a-f0-9]+$"
+          manifestTargets:
+            helm:
+              tag: "image.tag"
+{{- end }}

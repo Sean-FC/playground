@@ -1,0 +1,81 @@
+fullnameOverride: "presigner"
+replicaCount: 2
+image:
+  tag: "v0.1.0" # replaced by argo
+  pullPolicy: "IfNotPresent"
+imageUpdater:
+  enabled: true
+imagePullSecrets: []
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+probe_timings: &probe_timings
+  periodSeconds: 60 # For simplicity
+  timeoutSeconds: 3
+  failureThreshold: 3
+  initialDelaySeconds: 5
+livenessProbe:
+  httpGet:
+    path: /health/liveness
+    port: http
+  !!merge <<: *probe_timings
+readinessProbe:
+  httpGet:
+    path: /health/readiness
+    port: http
+  !!merge <<: *probe_timings
+serviceAccount:
+  name: "presigner"
+  annotations:
+    eks.amazonaws.com/audience: "sts.amazonaws.com"
+  create: true
+  automount: true
+externalSecret:
+  enabled: false
+  name: "presigner-config"
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+# fsGroup: 2000
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 999
+service:
+  type: ClusterIP
+  port: 443
+  targetPort: 8080
+autoscaling:
+  enabled: false
+volumes: []
+volumeMounts: []
+tolerations: []
+nodeSelector:
+  kubernetes.io/os: "linux"
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: DoNotSchedule
+    labelSelector:
+      matchLabels:
+        app: presigner
+httpRoute:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
