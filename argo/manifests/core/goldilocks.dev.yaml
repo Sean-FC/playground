@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: goldilocks
+  namespace: argo
+spec:
+  project: core
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: goldilocks
+  syncPolicy:
+    automated: {}
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=true
+  source:
+    repoURL: git@github.com:Sean-FC/playground.git
+    targetRevision: main
+    path: argo/charts/core/goldilocks
+    helm:
+      valueFiles:
+        - values.dev.yaml
