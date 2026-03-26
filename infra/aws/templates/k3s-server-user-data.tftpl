@@ -3,6 +3,14 @@ set -euxo pipefail
 
 dnf update -y
 
+# K3s can exhaust the default inotify limits on busy nodes even when
+# LimitNOFILE is already high in the generated systemd unit.
+cat >/etc/sysctl.d/90-k3s-inotify.conf <<'EOF'
+fs.inotify.max_user_instances = 8192
+fs.inotify.max_user_watches = 1048576
+EOF
+sysctl -p /etc/sysctl.d/90-k3s-inotify.conf
+
 # Persistent storage mounting + setup
 STATE_DEVICE="${state_device}"
 STATE_MOUNT="/var/lib/rancher/k3s"
