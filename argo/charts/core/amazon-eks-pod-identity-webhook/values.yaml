@@ -28,7 +28,8 @@ serviceAccount:
 rbac:
   create: true
 podAnnotations: {}
-podLabels: {}
+podLabels:
+  eks.amazonaws.com/skip-pod-identity-webhook: "true"
 podSecurityContext: {}
 securityContext: {}
 service:
