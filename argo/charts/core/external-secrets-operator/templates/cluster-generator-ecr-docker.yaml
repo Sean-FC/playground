@@ -1,0 +1,11 @@
+{{- if .Values.sharedSecrets.ecrDocker.enabled }}
+apiVersion: generators.external-secrets.io/v1alpha1
+kind: ClusterGenerator
+metadata:
+  name: {{ .Values.sharedSecrets.ecrDocker.name }}
+spec:
+  kind: ECRAuthorizationToken
+  generator:
+    ecrAuthorizationTokenSpec:
+      region: {{ .Values.sharedSecrets.ecrDocker.region }}
+{{- end }}

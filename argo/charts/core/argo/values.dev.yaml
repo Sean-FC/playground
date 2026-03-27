@@ -8,12 +8,10 @@ argo-cd:
         - argocd.dev.enervate.io
 updater:
   enabled: true
-  ecr:
-    enabled: true
-    secretName: ecr-docker
-    refreshInterval: 11h
   podAnnotations:
     reloader.stakater.com/auto: "true"
+  imagePullSecrets:
+    - name: ecr-docker
   config:
     registries:
       - name: ECR
@@ -21,7 +19,7 @@ updater:
         prefix: 266294491328.dkr.ecr.eu-west-1.amazonaws.com
         ping: yes
         insecure: false
-        credentials: pullsecret:argo/ecr-docker
+        credentials: pullsecret:argo/ecr-docker # provided by eso
   serviceAccount:
     annotations:
       eks.amazonaws.com/role-arn: "arn:aws:iam::266294491328:role/dev-aws-argo-image-updater"

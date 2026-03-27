@@ -77,6 +77,21 @@ data "aws_iam_policy_document" "external_secrets_operator" {
     ]
     resources = ["*"]
   }
+  # Permit auth token generator
+  statement {
+    sid    = "GetECRAuthzToken"
+    effect = "Allow"
+    actions = [
+      "ecr:GetAuthorizationToken",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:BatchGetImage",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:DescribeImages",
+      "ecr:ListImages",
+      "ecr:ListTagsForResource",
+    ]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_policy" "external_secrets_operator" {

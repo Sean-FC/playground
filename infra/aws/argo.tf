@@ -1,6 +1,4 @@
 data "aws_iam_policy_document" "argo_image_updater_assume" {
-  count = var.k3s_enabled ? 1 : 0
-
   statement {
     sid     = "AllowK3sServiceAccountAssumeRole"
     effect  = "Allow"
@@ -26,16 +24,13 @@ data "aws_iam_policy_document" "argo_image_updater_assume" {
 }
 
 resource "aws_iam_role" "argo_image_updater" {
-  count              = var.k3s_enabled ? 1 : 0
   name               = join(module.context.delimiter, [module.context.id, "argo-image-updater"])
-  assume_role_policy = data.aws_iam_policy_document.argo_image_updater_assume[0].json
+  assume_role_policy = data.aws_iam_policy_document.argo_image_updater_assume.json
 
   tags = module.context.tags
 }
 
 data "aws_iam_policy_document" "argo_image_updater" {
-  count = var.k3s_enabled ? 1 : 0
-
   statement {
     sid    = "ReadECR"
     effect = "Allow"
@@ -46,7 +41,6 @@ data "aws_iam_policy_document" "argo_image_updater" {
       "ecr:GetDownloadUrlForLayer",
       "ecr:DescribeRegistry",
       "ecr:DescribeImageReplicationStatus",
-      "ecr:GetAuthorizationToken",
       "ecr:ListTagsForResource",
       "ecr:ListImages",
       "ecr:BatchGetImage",
@@ -61,13 +55,11 @@ data "aws_iam_policy_document" "argo_image_updater" {
 }
 
 resource "aws_iam_policy" "argo_image_updater" {
-  count  = var.k3s_enabled ? 1 : 0
   name   = join(module.context.delimiter, [module.context.id, "argo-image-updater"])
-  policy = data.aws_iam_policy_document.argo_image_updater[0].json
+  policy = data.aws_iam_policy_document.argo_image_updater.json
 }
 
 resource "aws_iam_role_policy_attachment" "argo_image_updater" {
-  count      = var.k3s_enabled ? 1 : 0
-  role       = aws_iam_role.argo_image_updater[0].name
-  policy_arn = aws_iam_policy.argo_image_updater[0].arn
+  role       = aws_iam_role.argo_image_updater.name
+  policy_arn = aws_iam_policy.argo_image_updater.arn
 }

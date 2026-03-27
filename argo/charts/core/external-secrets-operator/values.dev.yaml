@@ -4,3 +4,9 @@ external-secrets:
   serviceAccount:
     annotations:
       eks.amazonaws.com/role-arn: "arn:aws:iam::266294491328:role/dev-aws-external-secrets-operator"
+sharedSecrets:
+  ecrDocker:
+    enabled: true
+    targetNamespaces:
+      - argo
+      - presigner
