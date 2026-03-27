@@ -15,10 +15,10 @@ external-secrets:
   resources:
     requests:
       cpu: "10m"
-      memory: "32Mi"
+      memory: "64Mi"
     limits:
       cpu: "100m"
-      memory: "64Mi"
+      memory: "192Mi"
   nodeSelector:
     kubernetes.io/os: linux
   serviceMonitor:
@@ -32,10 +32,10 @@ external-secrets:
     resources:
       requests:
         cpu: "10m"
-        memory: "32Mi"
+        memory: "64Mi"
       limits:
         cpu: "100m"
-        memory: "64Mi"
+        memory: "128Mi"
     nodeSelector:
       kubernetes.io/os: linux
   certController:
@@ -43,10 +43,10 @@ external-secrets:
     resources:
       requests:
         cpu: "10m"
-        memory: "32Mi"
+        memory: "64Mi"
       limits:
         cpu: "100m"
-        memory: "64Mi"
+        memory: "192Mi"
     nodeSelector:
       kubernetes.io/os: linux
 clusterSecretStores:
@@ -72,3 +72,11 @@ clusterSecretStores:
             serviceAccountRef:
               name: external-secrets-operator
               namespace: ""
+sharedSecrets:
+  ecrDocker:
+    enabled: false
+    region: eu-west-1
+    name: ecr-docker
+    refreshTime: 1m
+    refreshInterval: 11h
+    targetNamespaces: []

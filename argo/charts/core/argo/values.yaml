@@ -93,10 +93,6 @@ argo-cd:
 updater:
   enabled: false
   fullnameOverride: argocd-image-updater
-  ecr:
-    enabled: false
-    secretName: ecr-docker
-    refreshInterval: 11h
   resources:
     requests:
       cpu: 10m
