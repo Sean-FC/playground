@@ -1,6 +1,7 @@
 locals {
   presigner = {
-    name = "presigner"
+    name        = "presigner"
+    bucket_name = join(module.context.delimiter, ["seanfc", module.context.id, "presigner"])
   }
 }
 
@@ -45,6 +46,27 @@ data "aws_iam_policy_document" "presigner" {
     ]
     resources = ["*"]
   }
+  statement {
+    sid    = "S3List"
+    effect = "Allow"
+    actions = [
+      "s3:List*",
+    ]
+    resources = [
+      module.presigner_bucket.bucket_arn,
+    ]
+  }
+
+  statement {
+    sid    = "S3ObjectRead"
+    effect = "Allow"
+    actions = [
+      "s3:Get*",
+    ]
+    resources = [
+      "${module.presigner_bucket.bucket_arn}/*",
+    ]
+  }
 }
 
 resource "aws_iam_policy" "presigner" {
@@ -69,4 +91,17 @@ module "presigner_bucket" {
   bucket_key_enabled      = true
   versioning_enabled      = false
   user_enabled            = false
+}
+
+resource "aws_ssm_parameter" "presigner" {
+  name = "/${module.context.stage}/eso/apps/presigner"
+  type = "String"
+  value = jsonencode({
+    bucket = {
+      default_name   = local.presigner.bucket_name
+      default_region = module.presigner_bucket.bucket_region
+    }
+  })
+
+  tags = module.context.tags
 }
