@@ -26,6 +26,8 @@ argo-cd:
       type: ClusterIP
     ingress:
       enabled: false
+      ingressClassName: tailscale
+      tls: true
     httproute:
       parentRefs:
         - group: gateway.networking.k8s.io

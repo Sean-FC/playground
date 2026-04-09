@@ -13,6 +13,7 @@ locals {
   k3s_server_private_ip         = cidrhost(data.aws_subnet.k3s_server.cidr_block, 10)
   k3s_server_url_parameter_name = format("/%s/k3s/%s/server-url", module.context.id, local.k3s_cluster_name)
   k3s_token_parameter_name      = format("/%s/k3s/%s/token", module.context.id, local.k3s_cluster_name)
+  k3s_tailscale_key_name        = format("/%s/k3s/%s/tailscale-key", module.context.id, local.k3s_cluster_name)
   k3s_arch_to_ami = {
     arm64  = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64"
     x86_64 = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
@@ -142,6 +143,14 @@ resource "aws_security_group" "k3s" {
   }
 
   ingress {
+    description = "tailscale"
+    from_port   = 41641
+    to_port     = 41641
+    protocol    = "udp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     description = "intra-cluster"
     from_port   = 0
     to_port     = 0
@@ -180,6 +189,15 @@ resource "aws_ssm_parameter" "k3s_agent_token" {
   tags  = module.context.tags
 }
 
+resource "aws_ssm_parameter" "k3s_tailscale_key" {
+  count = var.k3s_enabled ? 1 : 0
+  name  = local.k3s_tailscale_key_name
+  type  = "SecureString"
+
+  value = tailscale_tailnet_key.k3s_tailnet_server[0].key
+  tags  = module.context.tags
+}
+
 resource "aws_instance" "k3s_server" {
   count                       = var.k3s_enabled ? 1 : 0
   ami                         = nonsensitive(data.aws_ssm_parameter.al2023_ami[0].value)
@@ -206,15 +224,16 @@ resource "aws_instance" "k3s_server" {
   }
 
   user_data = templatefile("${path.module}/templates/k3s-server-user-data.tftpl", {
-    api_endpoint               = local.k3s_api_fqdn
-    env                        = module.context.stage
-    k3s_version                = var.k3s_version
-    node_name                  = local.k3s_server_name
-    oidc_issuer_url            = "https://s3.${data.aws_region.current.region}.amazonaws.com/${aws_s3_bucket.k3s_oidc.bucket}"
-    sa_signer_private_key_pem  = local.secrets_main.k3s.sa_signer_private_key_pem
-    sa_signer_public_key_pkcs8 = local.secrets_main.k3s.sa_signer_public_key_pkcs8
-    state_device               = "/dev/sdf"
-    token                      = local.secrets_main.k3s.token
+    api_endpoint                 = local.k3s_api_fqdn
+    env                          = module.context.stage
+    k3s_version                  = var.k3s_version
+    node_name                    = local.k3s_server_name
+    oidc_issuer_url              = "https://s3.${data.aws_region.current.region}.amazonaws.com/${aws_s3_bucket.k3s_oidc.bucket}"
+    sa_signer_private_key_pem    = local.secrets_main.k3s.sa_signer_private_key_pem
+    sa_signer_public_key_pkcs8   = local.secrets_main.k3s.sa_signer_public_key_pkcs8
+    state_device                 = "/dev/sdf"
+    token_parameter_name         = local.k3s_token_parameter_name
+    tailscale_key_parameter_name = local.k3s_tailscale_key_name
   })
 
   tags = merge(

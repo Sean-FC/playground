@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euxo pipefail
+set -euo pipefail
 
 dnf update -y
 
@@ -74,9 +74,34 @@ if [ -n "$${PUBLIC_IP}" ]; then
   PUBLIC_IP_NODE_EXTERNAL=$(printf 'node-external-ip: "%s"\n' "$${PUBLIC_IP}")
 fi
 
+# Tailscale setup
+TAILSCALE_KEY="$(aws ssm get-parameter \
+    --name "${tailscale_key_parameter_name}" \
+    --with-decryption \
+    --query 'Parameter.Value' \
+    --output text \
+    --region "$${AWS_REGION}")"
+yum-config-manager --add-repo https://pkgs.tailscale.com/stable/amazon-linux/2023/tailscale.repo
+yum install tailscale -y
+systemctl enable --now tailscaled
+tailscale up --auth-key="$${TAILSCALE_KEY}" --hostname "${node_name}"
+
+# ETCD cli setup
+ETCD_VERSION="v3.5.29"
+ETCD_URL="https://github.com/etcd-io/etcd/releases/download/$${ETCD_VERSION}/etcd-$${ETCD_VERSION}-linux-arm64.tar.gz"
+curl -sL "$${ETCD_URL}" | sudo tar -zxv --strip-components=1 -C /usr/local/bin
+
+# Additional secrets
+TOKEN="$(aws ssm get-parameter \
+     --name "${token_parameter_name}" \
+     --with-decryption \
+     --query 'Parameter.Value' \
+     --output text \
+     --region "$${AWS_REGION}")"
+
 cat >/etc/rancher/k3s/config.yaml <<EOF
 write-kubeconfig-mode: "0644"
-token: "${token}"
+token: "$${TOKEN}"
 
 # Services
 disable:
@@ -103,6 +128,7 @@ secrets-encryption: true
 protect-kernel-defaults: false
 tls-san:
   - "${api_endpoint}"
+  - "${node_name}"
 $${PUBLIC_IP_TLS_SAN}
 
 # Logging + metrics

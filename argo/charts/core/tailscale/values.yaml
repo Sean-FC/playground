@@ -1,0 +1,26 @@
+tailscale:
+  enabled: true
+  installCRDs: true
+  operatorConfig:
+    defaultTags:
+      - tag:k8s-operator
+    image:
+      repository: ghcr.io/tailscale/k8s-operator
+      pullPolicy: IfNotPresent
+    nodeSelector:
+      kubernetes.io/os: linux
+    resources:
+      requests:
+        cpu: "25m"
+        memory: "64Mi"
+      limits:
+        cpu: "200m"
+        memory: "256Mi"
+  ingressClass:
+    enabled: true
+    name: tailscale
+  proxyConfig:
+    defaultTags: tag:k8s
+operatorOAuthSecret:
+  remoteRef:
+    key: ""

@@ -1,0 +1,3 @@
+operatorOAuthSecret:
+  remoteRef:
+    key: "/dev/eso/tailscale"
