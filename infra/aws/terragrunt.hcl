@@ -16,6 +16,11 @@ provider "github" {
   token = local.secrets_main.github.pat
 }
 
+provider "tailscale" {
+  api_key = local.secrets_main.tailscale.api_key
+  tailnet = local.secrets_main.tailscale.tailnet
+}
+
 EOF
 }
 

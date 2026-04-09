@@ -1,0 +1,11 @@
+apiVersion: v2
+dependencies:
+  - name: tailscale-operator
+    repository: https://pkgs.tailscale.com/helmcharts
+    version: 1.96.5
+    alias: tailscale
+    condition: tailscale.enabled
+description: Helm chart managing the Tailscale Operator for private connectivity
+name: tailscale
+type: application
+version: 0.1.0

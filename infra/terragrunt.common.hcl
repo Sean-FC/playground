@@ -148,6 +148,10 @@ terraform {
       source = "carlpett/sops"
       version = "~> 1.4.0"
     }
+    tailscale = {
+      source  = "tailscale/tailscale"
+      version = "~> 0.28.0"
+    }
     tls = {
       source = "hashicorp/tls"
       version = "~> 4.2.1"
