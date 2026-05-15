@@ -1,0 +1,51 @@
+keda:
+  crds:
+    install: true
+  image:
+    pullPolicy: IfNotPresent
+  nodeSelector:
+    kubernetes.io/os: "linux"
+  podIdentity:
+    aws:
+      irsa:
+        enabled: false # Highlight no default role, workloads bring their own
+  prometheus:
+    metricServer:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        interval: 60s
+        additionalLabels:
+          release: monitoring
+    operator:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        interval: 60s
+        additionalLabels:
+          release: monitoring
+      prometheusRules:
+        enabled: true
+        alerts:
+          - alert: KedaScaledObjectErrors
+            annotations:
+              description: Keda scaledObject {{ $labels.scaledObject }} is experiencing errors with {{ $labels.scaler }} scaler
+              summary: Keda Scaler {{ $labels.scaledObject }} Errors
+            expr: sum by ( scaledObject , scaler) (rate(keda_scaled_object_errors[2m])) > 0
+            for: 1m
+            labels:
+              severity: critical
+          - alert: KedaScalerErrors
+            annotations:
+              description: Keda scaler {{ $labels.scaler }} is experiencing errors
+              summary: Keda Scaler {{ $labels.scaler }} Errors
+            expr: sum by ( scaledObject , scaler) (rate(keda_scaler_errors[2m])) > 0
+            for: 1m
+            labels:
+              severity: critical
+  permissions:
+    operator:
+      restrict:
+        secret: true
+  asciiArt: false
+  enableServiceLinks: false

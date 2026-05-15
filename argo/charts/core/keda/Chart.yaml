@@ -1,0 +1,10 @@
+apiVersion: v2
+dependencies:
+  - name: keda
+    repository: https://kedacore.github.io/charts
+    version: 2.19.0
+    condition: keda.enabled
+description: A Helm chart for managing Keda
+name: keda
+version: 0.1.0
+appVersion: 2.19.0
