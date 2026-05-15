@@ -1,0 +1,3 @@
+postgresExternalSecret:
+  remoteRef:
+    key: "/dev/eso/postgres"
