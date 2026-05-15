@@ -1,0 +1,66 @@
+postgres:
+  enabled: true
+  fullnameOverride: postgres
+  architecture: standalone
+  auth:
+    enablePostgresUser: true
+    username: platform
+    database: platform
+    existingSecret: postgres-auth
+    secretKeys:
+      adminPasswordKey: admin-password
+      userPasswordKey: platform-password
+  postgresqlSharedPreloadLibraries: "pgaudit,pg_stat_statements"
+  primary:
+    initdb:
+      scripts:
+        01-create-extensions.sql: |
+          CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+          \connect template1
+          CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+        02-grant-bootstrap-role-single-user-model.sql: |
+          ALTER ROLE platform CREATEDB;
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 1024Mi
+    persistence:
+      enabled: true
+      size: 20Gi
+    nodeSelector:
+      kubernetes.io/os: linux
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: DoesNotExist
+  readReplicas:
+    replicaCount: 0
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      labels:
+        release: monitoring
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+postgresExternalSecret:
+  # Share init user credentials with app namespaces that state they require it.
+  # Permits self-managed initialization and user creation.
+  target:
+    platformSecretName: postgres-platform
+    platformNamespaceSelectors:
+      - matchLabels:
+          postgres: "true"
+  remoteRef:
+    key: ""
