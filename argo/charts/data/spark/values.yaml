@@ -1,0 +1,108 @@
+operator:
+  enabled: true
+  image:
+    pullPolicy: IfNotPresent
+  controller:
+    workers: 10
+    logEncoder: json
+    maxTrackedExecutorPerApp: 128
+    featureGates:
+      - name: PartialRestart
+        enabled: true
+    uiService:
+      enable: true
+    uiIngress:
+      enable: false # https://github.com/kubeflow/spark-operator/issues/2781
+    resources:
+      requests:
+        cpu: 100m
+        memory: 64Mi
+      limits:
+        cpu: 1000m
+        memory: 2048Mi
+    nodeSelector:
+      kubernetes.io/os: linux
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: DoesNotExist
+    batchScheduler:
+      enable: false
+      default: "yunikorn"
+  webhook:
+    nodeSelector:
+      kubernetes.io/os: linux
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: node-role.kubernetes.io/control-plane
+                  operator: DoesNotExist
+    resources:
+      requests:
+        cpu: 100m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 256Mi
+  spark:
+    jobNamespaces:
+      - "spark"
+    # Below ignored by mutating webhook; be explicit in namespaces for now
+    #jobNamespaceSelector: "spark=true"
+    serviceAccount:
+      create: true
+    rbac:
+      create: true
+  prometheus:
+    metrics:
+      enable: true
+    podMonitor:
+      create: true
+      labels:
+        release: monitoring
+      jobLabel: spark-operator-podmonitor
+      podMetricsEndpoint:
+        scheme: http
+        interval: 10s
+  certManager:
+    enable: true
+    issuerRef:
+      group: cert-manager.io
+      kind: ClusterIssuer
+      name: selfsigned
+    duration: 2160h # 90d
+    renewBefore: 360h # 15d
+history:
+  enabled: false
+  image:
+    tag: 1.5.2-aws-4.0.1
+    pullPolicy: IfNotPresent
+  serviceAccount:
+    name: spark-history
+    annotations:
+      eks.amazonaws.com/audience: "sts.amazonaws.com"
+  sparkDaemon:
+    memory: 4g
+  logStore:
+    s3:
+      eventLogsPath: logs/
+  resources:
+    requests:
+      memory: 2Gi
+    limits:
+      memory: 6Gi
+  sparkConf: |-
+    spark.hadoop.fs.s3a.aws.credentials.provider=software.amazon.awssdk.auth.credentials.WebIdentityTokenFileCredentialsProvider
+    spark.hadoop.fs.s3a.connection.maximum=200
+    spark.hadoop.fs.s3a.threads.max=50
+    spark.hadoop.fs.s3a.max.total.tasks=100
+    spark.hadoop.fs.s3a.connection.establish.timeout=10000
+    spark.hadoop.fs.s3a.connection.timeout=20000
+    spark.ui.retainedJobs=100
+    spark.ui.retainedStages=10000
+    spark.history.store.hybridStore.maxMemoryUsage=2g

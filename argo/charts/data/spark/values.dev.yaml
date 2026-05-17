@@ -1,0 +1,9 @@
+operator:
+  controller:
+    replicas: 1
+history:
+  replicaCount: 1
+  logStore:
+    s3:
+      bucket: seanfc-dev-aws-spark-logs
+      irsaRoleArn: "arn:aws:iam::266294491328:role/dev-aws-spark-history"

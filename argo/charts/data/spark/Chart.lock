@@ -1,0 +1,9 @@
+dependencies:
+- name: spark-operator
+  repository: https://kubeflow.github.io/spark-operator
+  version: 2.5.0
+- name: spark-history-server
+  repository: https://kubedai.github.io/spark-history-server
+  version: 1.5.2
+digest: sha256:641116a47858431852346ec4a9f3fbd30f537c67ad55c5f18fa89424944bdd50
+generated: "2026-05-15T15:42:08.590246+02:00"
