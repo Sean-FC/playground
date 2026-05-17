@@ -1,0 +1,15 @@
+apiVersion: v2
+dependencies:
+  - name: spark-operator
+    version: 2.5.0
+    repository: https://kubeflow.github.io/spark-operator
+    alias: operator
+    condition: operator.enabled
+  - name: spark-history-server
+    repository: https://kubedai.github.io/spark-history-server
+    version: 1.5.2
+    alias: history
+    condition: history.enabled
+description: Helm chart managing the spark operator and history server
+name: spark
+version: 0.1.0
