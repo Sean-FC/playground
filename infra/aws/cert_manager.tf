@@ -1,6 +1,4 @@
 data "aws_iam_policy_document" "cert_manager_assume" {
-  count = var.k3s_enabled ? 1 : 0
-
   statement {
     sid     = "AllowK3sServiceAccountAssumeRole"
     effect  = "Allow"
@@ -26,16 +24,13 @@ data "aws_iam_policy_document" "cert_manager_assume" {
 }
 
 resource "aws_iam_role" "cert_manager" {
-  count              = var.k3s_enabled ? 1 : 0
   name               = join(module.context.delimiter, [module.context.id, "cert-manager"])
-  assume_role_policy = data.aws_iam_policy_document.cert_manager_assume[0].json
+  assume_role_policy = data.aws_iam_policy_document.cert_manager_assume.json
 
   tags = module.context.tags
 }
 
 data "aws_iam_policy_document" "cert_manager_route53" {
-  count = var.k3s_enabled ? 1 : 0
-
   statement {
     sid    = "ChangeStageZoneRecords"
     effect = "Allow"
@@ -75,13 +70,11 @@ data "aws_iam_policy_document" "cert_manager_route53" {
 }
 
 resource "aws_iam_policy" "cert_manager_route53" {
-  count  = var.k3s_enabled ? 1 : 0
   name   = join(module.context.delimiter, [module.context.id, "cert-manager", "route53"])
-  policy = data.aws_iam_policy_document.cert_manager_route53[0].json
+  policy = data.aws_iam_policy_document.cert_manager_route53.json
 }
 
 resource "aws_iam_role_policy_attachment" "cert_manager_route53" {
-  count      = var.k3s_enabled ? 1 : 0
-  role       = aws_iam_role.cert_manager[0].name
-  policy_arn = aws_iam_policy.cert_manager_route53[0].arn
+  role       = aws_iam_role.cert_manager.name
+  policy_arn = aws_iam_policy.cert_manager_route53.arn
 }

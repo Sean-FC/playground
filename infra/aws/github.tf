@@ -17,9 +17,8 @@ resource "github_repository_deploy_key" "argocd" {
 }
 
 resource "aws_ssm_parameter" "github_actions_runners" {
-  count = var.k3s_enabled ? 1 : 0
-  name  = "/${module.context.stage}/eso/github-actions-runners"
-  type  = "SecureString"
+  name = "/${module.context.stage}/eso/github-actions-runners"
+  type = "SecureString"
   value = jsonencode({
     github_token = local.secrets_main.github.pat
   })
@@ -29,8 +28,6 @@ resource "aws_ssm_parameter" "github_actions_runners" {
 
 # Default role that can be used by GHA scale-set runners
 data "aws_iam_policy_document" "default_gha_runner_assume" {
-  count = var.k3s_enabled ? 1 : 0
-
   statement {
     sid     = "AllowK3sServiceAccountAssumeRole"
     effect  = "Allow"
@@ -56,16 +53,13 @@ data "aws_iam_policy_document" "default_gha_runner_assume" {
 }
 
 resource "aws_iam_role" "default_gha_runner" {
-  count              = var.k3s_enabled ? 1 : 0
   name               = join(module.context.delimiter, [module.context.stage, "default", "gha", "runner"])
-  assume_role_policy = data.aws_iam_policy_document.default_gha_runner_assume[0].json
+  assume_role_policy = data.aws_iam_policy_document.default_gha_runner_assume.json
 
   tags = module.context.tags
 }
 
 data "aws_iam_policy_document" "default_gha_runner" {
-  count = var.k3s_enabled ? 1 : 0
-
   statement {
     sid    = "StsCallerIdentity"
     effect = "Allow"
@@ -138,13 +132,11 @@ data "aws_iam_policy_document" "default_gha_runner" {
 }
 
 resource "aws_iam_policy" "default_gha_runner" {
-  count  = var.k3s_enabled ? 1 : 0
   name   = join(module.context.delimiter, [module.context.stage, "default", "gha", "runner"])
-  policy = data.aws_iam_policy_document.default_gha_runner[0].json
+  policy = data.aws_iam_policy_document.default_gha_runner.json
 }
 
 resource "aws_iam_role_policy_attachment" "default_gha_runner" {
-  count      = var.k3s_enabled ? 1 : 0
-  role       = aws_iam_role.default_gha_runner[0].name
-  policy_arn = aws_iam_policy.default_gha_runner[0].arn
+  role       = aws_iam_role.default_gha_runner.name
+  policy_arn = aws_iam_policy.default_gha_runner.arn
 }

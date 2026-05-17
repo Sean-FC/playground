@@ -1,6 +1,4 @@
 data "aws_iam_policy_document" "external_secrets_operator_assume" {
-  count = var.k3s_enabled ? 1 : 0
-
   statement {
     sid     = "AllowK3sServiceAccountAssumeRole"
     effect  = "Allow"
@@ -26,15 +24,13 @@ data "aws_iam_policy_document" "external_secrets_operator_assume" {
 }
 
 resource "aws_iam_role" "external_secrets_operator" {
-  count              = var.k3s_enabled ? 1 : 0
   name               = join(module.context.delimiter, [module.context.id, "external", "secrets", "operator"])
-  assume_role_policy = data.aws_iam_policy_document.external_secrets_operator_assume[0].json
+  assume_role_policy = data.aws_iam_policy_document.external_secrets_operator_assume.json
 
   tags = module.context.tags
 }
 
 data "aws_iam_policy_document" "external_secrets_operator" {
-  count = var.k3s_enabled ? 1 : 0
   statement {
     sid    = "ListSecretsManager"
     effect = "Allow"
@@ -95,13 +91,11 @@ data "aws_iam_policy_document" "external_secrets_operator" {
 }
 
 resource "aws_iam_policy" "external_secrets_operator" {
-  count  = var.k3s_enabled ? 1 : 0
   name   = join(module.context.delimiter, [module.context.id, "external-secrets-operator", "read"])
-  policy = data.aws_iam_policy_document.external_secrets_operator[0].json
+  policy = data.aws_iam_policy_document.external_secrets_operator.json
 }
 
 resource "aws_iam_role_policy_attachment" "external_secrets_operator" {
-  count      = var.k3s_enabled ? 1 : 0
-  role       = aws_iam_role.external_secrets_operator[0].name
-  policy_arn = aws_iam_policy.external_secrets_operator[0].arn
+  role       = aws_iam_role.external_secrets_operator.name
+  policy_arn = aws_iam_policy.external_secrets_operator.arn
 }

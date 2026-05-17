@@ -194,7 +194,7 @@ resource "aws_ssm_parameter" "k3s_tailscale_key" {
   name  = local.k3s_tailscale_key_name
   type  = "SecureString"
 
-  value = tailscale_tailnet_key.k3s_tailnet_server[0].key
+  value = tailscale_tailnet_key.k3s_tailnet_server.key
   tags  = module.context.tags
 }
 

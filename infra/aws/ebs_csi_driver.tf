@@ -1,6 +1,4 @@
 data "aws_iam_policy_document" "ebs_csi_driver_assume" {
-  count = var.k3s_enabled ? 1 : 0
-
   statement {
     sid     = "AllowK3sServiceAccountAssumeRole"
     effect  = "Allow"
@@ -26,16 +24,14 @@ data "aws_iam_policy_document" "ebs_csi_driver_assume" {
 }
 
 resource "aws_iam_role" "ebs_csi_driver" {
-  count              = var.k3s_enabled ? 1 : 0
   name               = join(module.context.delimiter, [module.context.id, "ebs-csi-controller"])
-  assume_role_policy = data.aws_iam_policy_document.ebs_csi_driver_assume[0].json
+  assume_role_policy = data.aws_iam_policy_document.ebs_csi_driver_assume.json
 
   tags = module.context.tags
 }
 
 resource "aws_iam_role_policy_attachment" "ebs_csi_driver" {
-  count      = var.k3s_enabled ? 1 : 0
-  role       = aws_iam_role.ebs_csi_driver[0].name
+  role       = aws_iam_role.ebs_csi_driver.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
 

@@ -1,5 +1,4 @@
 resource "tailscale_tailnet_key" "k3s_tailnet_server" {
-  count               = var.k3s_enabled ? 1 : 0
   reusable            = true
   ephemeral           = false
   preauthorized       = true
