@@ -2,7 +2,57 @@
 
 Monorepo demonstrating some personal styles + rudimentary capabilities.
 
-- [``adrs/``](./adrs/) - Any architectural decision records.  Template + LLM + commit history.
+```mermaid
+flowchart TB
+    repo["Git Repo<br/>playground"] --> argo["Argo CD<br/>argo-cd / image updater"]
+
+    subgraph layers[" "]
+        direction TB
+
+        subgraph shared["Shared platform layer"]
+            subgraph networking["Networking"]
+                gateway["Gateway API"]
+                traefik["Traefik"]
+                cert["cert-manager"]
+                auth["OAuth2 Proxy"]
+                tailscale["Tailscale"]
+            end
+
+            subgraph cloud["Cloud vendor specific"]
+                eso["External Secrets"]
+                podid["EKS Pod Identity"]
+                ebs["AWS EBS CSI"]
+            end
+
+            subgraph scaling["Scaling and scheduling"]
+                karpenter["Karpenter"]
+                keda["KEDA"]
+                gpu["NVIDIA GPU Operator"]
+                gha["GHA<br/>ARC controller / runner scale set"]
+            end
+
+            subgraph observability["Observability and operations"]
+                monitor["Monitoring<br/>Prometheus / Grafana / Loki / Tempo / Fluent Bit"]
+                reloader["Reloader"]
+                goldilocks["Goldilocks"]
+                trivy["Trivy"]
+                crowdsec["CrowdSec"]
+            end
+        end
+
+        subgraph workloads["Workload layer"]
+            app["Apps<br/>presigner - FastAPI"]
+            postgres["Data<br/>postgres"]
+            spark["Data<br/>spark operator / history server"]
+            ml["ML<br/>ray"]
+        end
+    end
+
+    argo --> shared
+    argo --> workloads
+
+    users["Users / DNS / HTTPS"] --> traefik
+```
 
 - [``apps/``](./cdk-clusters/) - Application code
 
@@ -11,8 +61,6 @@ Monorepo demonstrating some personal styles + rudimentary capabilities.
 - [``data/``](./data/) - Local exploration + simple pipeline layout
 
 - [``infra/``](./infra/) - IaC
-
-- [``notebooks/``](./notebooks/) - Quick pocs
 
 ## Getting started
 
