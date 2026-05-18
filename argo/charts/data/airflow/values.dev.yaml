@@ -1,0 +1,11 @@
+airflow:
+  scheduler:
+    replicas: 1
+  webserver:
+    replicas: 1
+  triggerer:
+    replicas: 1
+airflowExternalSecret:
+  parameterStoreKey: /dev/eso/airflow
+  postgres:
+    parameterStoreKey: /dev/eso/postgres

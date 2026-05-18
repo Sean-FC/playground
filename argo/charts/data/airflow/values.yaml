@@ -1,0 +1,109 @@
+airflow:
+  enabled: true
+  useStandardNaming: true
+  revisionHistoryLimit: 5
+  executor: KubernetesExecutor
+  allowPodLaunching: true
+  multiNamespaceMode: false
+  # GitOps installation must disable these
+  createUserJob:
+    useHelmHooks: false
+    applyCustomEnv: false
+  migrateDatabaseJob:
+    useHelmHooks: false
+    applyCustomEnv: false
+  # External Postgres managed by the postgres chart in namespace `postgres`
+  postgresql:
+    enabled: false
+  data:
+    metadataSecretName: airflow-metadata
+    resultBackendSecretName: airflow-metadata
+  fernetKeySecretName: airflow-fernet
+  apiSecretKeySecretName: airflow-api
+  jwtSecretName: airflow-jwt
+  webserverSecretKeySecretName: airflow-webserver
+  dags:
+    gitSync:
+      enabled: true
+      repo: git@github.com:Sean-FC/playground.git
+      branch: main
+      ref: main
+      rev: HEAD
+      depth: 1
+      subPath: data
+      sshKeySecret: airflow-git-ssh
+      period: 60s
+  scheduler:
+    replicas: 1
+    podDisruptionBudget:
+      enabled: true
+      config:
+        minAvailable: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+    serviceAccount:
+      create: true
+      name: airflow-scheduler
+  webserver:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 768Mi
+  triggerer:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 768Mi
+  flower:
+    enabled: false
+  redis:
+    enabled: false
+  statsd:
+    enabled: false
+  config:
+    core:
+      load_examples: "False"
+    logging:
+      remote_logging: "False"
+    kubernetes_executor:
+      namespace: "{{ .Release.Namespace }}"
+      in_cluster: "True"
+      delete_worker_pods: "True"
+      delete_worker_pods_on_failure: "False"
+      worker_pods_creation_batch_size: "2"
+      pod_template_file: "/opt/airflow/pod_templates/pod_template_file.yaml"
+  env:
+    - name: AIRFLOW_VAR_SPARK_NAMESPACE
+      value: spark
+  workers:
+    kubernetes:
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: 1000m
+          memory: 1536Mi
+airflowExternalSecret:
+  parameterStoreKey: ""
+  postgres:
+    parameterStoreKey: ""
+    host: postgres.postgres.svc.cluster.local
+    port: 5432
+    database: platform
+    user: platform
+sparkIntegration:
+  enabled: true
+  namespace: spark
+  schedulerServiceAccountName: airflow-scheduler
