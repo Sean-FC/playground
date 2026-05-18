@@ -1,0 +1,57 @@
+auth:
+  externalSecret:
+    remoteRef:
+      key: ""
+      githubAppIdProperty: github-app-id
+      githubAppKeyProperty: github-app-pem
+      licenseKeyProperty: license-key
+metrics:
+  serviceMonitor:
+    enabled: true
+    interval: 60s
+    labels:
+      release: monitoring
+renovate:
+  enabled: true
+  nodeSelector:
+    kubernetes.io/os: linux
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: DoesNotExist
+  livenessProbe:
+    initialDelaySeconds: 30
+    failureThreshold: 30
+  readinessProbe:
+    failureThreshold: 30
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 250m
+      memory: 512Mi
+  renovate:
+    mendRnvAcceptTos: "y"
+    mendRnvPlatform: github
+    mendRnvEndpoint: https://api.github.com/
+    existingSecret: renovate-secrets
+    mendRnvSyncOnStartup: "true"
+    mendRnvSyncMode: bulk
+    mendRnvCronJobSchedulerAll: "0 */6 * * *"
+    mendRnvCronAppSync: "0 */6 * * *"
+    mendRnvForksProcessing: disabled
+    mendRnvLogHistoryTTLDays: 7
+    mendRnvLogHistoryCleanupCron: "0 0 * * *"
+    mendRnvPrometheusMetricsEnabled: "true"
+    config: |
+      module.exports = {
+        platform: 'github',
+        endpoint: 'https://api.github.com/',
+        repositories: ['Sean-FC/playground'],
+        requireConfig: 'required',
+        onboarding: false,
+      };
