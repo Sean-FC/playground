@@ -1,0 +1,318 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^infra\\/terragrunt\\.common\\.hcl$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: versioning=(?<versioning>\\S+))?\\s+[A-Za-z0-9_]+\\s*=\\s*\"[^\"\\d]*(?<currentValue>\\d[^\"\\s]*)\"",
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: versioning=(?<versioning>\\S+))?\\s+source\\s*=\\s*\"git::https:\\/\\/github\\.com\\/[^\"]*?\\?ref=tags\\/(?<currentValue>\\d[^\"\\s]*)\"",
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: versioning=(?<versioning>\\S+))?\\s+source\\s*=\\s*\"[^\"]+\"\\s+version\\s*=\\s*\"~>\\s*(?<currentValue>\\d[^\"\\s]*)\""
+      ]
+    }
+  ],
+  "dependencyDashboard": true,
+  "enabledManagers": [
+    "helmv3",
+    "terraform",
+    "terragrunt",
+    "custom.regex"
+  ],
+  "includePaths": [
+    "argo/charts/**",
+    "infra/**"
+  ],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "matchFileNames": [
+        "argo/charts/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
+    },
+    {
+      "groupName": "chart gateway-api",
+      "matchFileNames": [
+        "argo/charts/_crds/gateway-api/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart presigner",
+      "matchFileNames": [
+        "argo/charts/apps/presigner/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart amazon-eks-pod-identity-webhook",
+      "matchFileNames": [
+        "argo/charts/core/amazon-eks-pod-identity-webhook/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart argo",
+      "matchFileNames": [
+        "argo/charts/core/argo/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart aws-cloud-controller-manager",
+      "matchFileNames": [
+        "argo/charts/core/aws-cloud-controller-manager/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart aws-ebs-csi-driver",
+      "matchFileNames": [
+        "argo/charts/core/aws-ebs-csi-driver/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart cert-manager",
+      "matchFileNames": [
+        "argo/charts/core/cert-manager/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart crowdsec",
+      "matchFileNames": [
+        "argo/charts/core/crowdsec/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart external-secrets-operator",
+      "matchFileNames": [
+        "argo/charts/core/external-secrets-operator/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart gha",
+      "matchFileNames": [
+        "argo/charts/core/gha/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart goldilocks",
+      "matchFileNames": [
+        "argo/charts/core/goldilocks/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart karpenter",
+      "matchFileNames": [
+        "argo/charts/core/karpenter/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart keda",
+      "matchFileNames": [
+        "argo/charts/core/keda/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart kyverno",
+      "matchFileNames": [
+        "argo/charts/core/kyverno/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart monitoring",
+      "matchFileNames": [
+        "argo/charts/core/monitoring/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart nvidia-gpu-operator",
+      "matchFileNames": [
+        "argo/charts/core/nvidia-gpu-operator/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart oauth2-proxy",
+      "matchFileNames": [
+        "argo/charts/core/oauth2-proxy/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart reloader",
+      "matchFileNames": [
+        "argo/charts/core/reloader/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart renovate",
+      "matchFileNames": [
+        "argo/charts/core/renovate/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart tailscale",
+      "matchFileNames": [
+        "argo/charts/core/tailscale/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart traefik",
+      "matchFileNames": [
+        "argo/charts/core/traefik/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart trivy",
+      "matchFileNames": [
+        "argo/charts/core/trivy/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart postgres",
+      "matchFileNames": [
+        "argo/charts/data/postgres/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart prefect",
+      "matchFileNames": [
+        "argo/charts/data/prefect/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart spark",
+      "matchFileNames": [
+        "argo/charts/data/spark/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart trino",
+      "matchFileNames": [
+        "argo/charts/data/trino/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart kagent",
+      "matchFileNames": [
+        "argo/charts/ml/kagent/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "groupName": "chart ray",
+      "matchFileNames": [
+        "argo/charts/ml/ray/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
+      "matchFileNames": [
+        "infra/**"
+      ],
+      "matchManagers": [
+        "terraform",
+        "terragrunt",
+        "custom.regex"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
+    },
+    {
+      "enabled": false,
+      "matchUpdateTypes": [
+        "major"
+      ]
+    }
+  ],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2
+}

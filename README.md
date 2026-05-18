@@ -34,6 +34,7 @@ flowchart TB
             subgraph observability["Observability and operations"]
                 monitor["Monitoring<br/>Prometheus / Grafana / Loki / Tempo / Fluent Bit"]
                 reloader["Reloader"]
+                renovate["Renovate"]
                 goldilocks["Goldilocks"]
                 trivy["Trivy"]
                 crowdsec["CrowdSec"]

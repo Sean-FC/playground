@@ -1,0 +1,11 @@
+apiVersion: v2
+dependencies:
+  - name: mend-renovate-ce
+    repository: https://mend.github.io/renovate-ce-ee
+    version: 14.5.0
+    alias: renovate
+    condition: renovate.enabled
+description: Helm chart managing renovate-ce for automated dependency updates
+name: renovate
+type: application
+version: 0.1.0

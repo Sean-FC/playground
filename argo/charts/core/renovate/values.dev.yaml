@@ -1,0 +1,7 @@
+auth:
+  externalSecret:
+    remoteRef:
+      key: "/dev/eso/renovate"
+renovate:
+  renovate:
+    mendRnvAutoDiscoverFilter: Sean-FC/playground

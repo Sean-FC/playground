@@ -1,0 +1,6 @@
+dependencies:
+- name: mend-renovate-ce
+  repository: https://mend.github.io/renovate-ce-ee
+  version: 14.5.0
+digest: sha256:b7bc70f521524262a7c81e09712b24a2b8a7ebcde5ab19769762dd49e86bba82
+generated: "2026-05-17T21:29:12.018756+02:00"
