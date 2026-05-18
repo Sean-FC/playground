@@ -1,0 +1,65 @@
+commitizen:
+  name: cz_customize
+  tag_format: $version
+  version: 0.0.1
+  version_scheme: semver2
+  customize:
+    schema: '<type>: <subject>'
+    schema_pattern: '^(build|ci|docs|feat|fix|perf|refactor|style|test|chore)(\(.*\))?!?:\s.+$'
+    example: 'feat: add signed URL endpoint for uploads'
+    message_template: '{{change_type}}{% if scope %}({{scope}}){% endif %}: {{message}}'
+    commit_parser: '^(?P<change_type>build|ci|docs|feat|fix|perf|refactor|style|test|chore)(?:\((?P<scope>[^\)]+)\))?(?P<breaking>!)?:\s(?P<message>.+)$'
+    changelog_pattern: '^(build|ci|docs|feat|fix|perf|refactor|style|test|chore)(\(.*\))?!?:'
+    change_type_map:
+      build: Build
+      ci: CI
+      docs: Docs
+      feat: Feat
+      fix: Fix
+      perf: Perf
+      refactor: Refactor
+      style: Style
+      test: Test
+      chore: Chore
+    change_type_order:
+      - feat
+      - fix
+      - perf
+      - refactor
+      - build
+      - ci
+      - docs
+      - style
+      - test
+      - chore
+    questions:
+      - type: list
+        name: change_type
+        message: Select the type of change you are committing
+        choices:
+          - value: build
+            name: 'build: Changes that affect the build system or external dependencies'
+          - value: ci
+            name: 'ci: Changes to our CI configuration files and scripts'
+          - value: docs
+            name: 'docs: Documentation only changes'
+          - value: feat
+            name: 'feat: A new feature'
+          - value: fix
+            name: 'fix: A bug fix'
+          - value: perf
+            name: 'perf: A code change that improves performance'
+          - value: refactor
+            name: 'refactor: A code change that neither fixes a bug nor adds a feature'
+          - value: style
+            name: 'style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)'
+          - value: test
+            name: 'test: Adding missing tests or correcting existing tests'
+          - value: chore
+            name: "chore: Other changes that don't fit the above, such as updating dependencies, build processes, etc"
+      - type: input
+        name: scope
+        message: 'Scope. (optional)'
+      - type: input
+        name: message
+        message: 'Subject in imperative mood (lowercase), no trailing period:'
