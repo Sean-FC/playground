@@ -2,7 +2,7 @@ apiVersion: v2
 dependencies:
   - name: postgresql
     repository: https://charts.bitnami.com/bitnami
-    version: 18.6.6
+    version: 18.6.7
     condition: postgres.enabled
     alias: postgres
 description: Helm chart managing a single postgres instance for demo purposes
