@@ -3,17 +3,17 @@ kind: Application
 metadata:
   name: nvidia-gpu-operator
   namespace: argo
+  annotations:
+    argocd-diff-preview/watch-pattern: |
+      argo/charts/core/nvidia-gpu-operator/templates/.*,
+      argo/charts/core/nvidia-gpu-operator/values.*\.ya?ml,
+      argo/charts/core/nvidia-gpu-operator/Chart\.yaml,
+      argo/charts/core/nvidia-gpu-operator/Chart\.lock
 spec:
   project: core
   destination:
     server: https://kubernetes.default.svc
     namespace: nvidia-gpu-operator
-    annotations:
-      argocd-diff-preview/watch-pattern: |
-        argo/charts/core/nvidia-gpu-operator/templates/.*,
-        argo/charts/core/nvidia-gpu-operator/values.*\.ya?ml,
-        argo/charts/core/nvidia-gpu-operator/Chart\.yaml,
-        argo/charts/core/nvidia-gpu-operator/Chart\.lock
   syncPolicy:
     automated:
       prune: true

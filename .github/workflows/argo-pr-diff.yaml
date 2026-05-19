@@ -38,6 +38,7 @@ jobs:
             --target-branch="refs/pull/${{ github.event.number }}/merge" \
             --repo="${{ github.repository }}" \
             --auto-detect-files-changed=true \
+            --watch-if-no-watch-pattern-found=false
       - name: Upsert diff as comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

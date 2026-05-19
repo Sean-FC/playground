@@ -3,17 +3,17 @@ kind: Application
 metadata:
   name: renovate
   namespace: argo
+  annotations:
+    argocd-diff-preview/watch-pattern: |
+      argo/charts/core/renovate/templates/.*,
+      argo/charts/core/renovate/values.*\.ya?ml,
+      argo/charts/core/renovate/Chart\.yaml,
+      argo/charts/core/renovate/Chart\.lock
 spec:
   project: core
   destination:
     server: https://kubernetes.default.svc
     namespace: renovate
-    annotations:
-      argocd-diff-preview/watch-pattern: |
-        argo/charts/core/renovate/templates/.*,
-        argo/charts/core/renovate/values.*\.ya?ml,
-        argo/charts/core/renovate/Chart\.yaml,
-        argo/charts/core/renovate/Chart\.lock
   syncPolicy:
     automated:
       prune: true

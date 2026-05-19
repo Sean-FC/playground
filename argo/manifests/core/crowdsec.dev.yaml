@@ -3,17 +3,17 @@ kind: Application
 metadata:
   name: crowdsec
   namespace: argo
+  annotations:
+    argocd-diff-preview/watch-pattern: |
+      argo/charts/core/crowdsec/templates/.*,
+      argo/charts/core/crowdsec/values.*\.ya?ml,
+      argo/charts/core/crowdsec/Chart\.yaml,
+      argo/charts/core/crowdsec/Chart\.lock
 spec:
   project: core
   destination:
     server: https://kubernetes.default.svc
     namespace: crowdsec
-    annotations:
-      argocd-diff-preview/watch-pattern: |
-        argo/charts/core/crowdsec/templates/.*,
-        argo/charts/core/crowdsec/values.*\.ya?ml,
-        argo/charts/core/crowdsec/Chart\.yaml,
-        argo/charts/core/crowdsec/Chart\.lock
   syncPolicy:
     automated:
       prune: true
