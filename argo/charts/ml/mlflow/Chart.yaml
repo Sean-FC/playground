@@ -1,0 +1,10 @@
+apiVersion: v2
+name: mlflow
+description: Helm chart managing MLflow with external Postgres and S3 artifact storage
+type: application
+version: 0.1.0
+dependencies:
+  - name: mlflow
+    version: 1.8.1
+    repository: https://community-charts.github.io/helm-charts
+    condition: mlflow.enabled

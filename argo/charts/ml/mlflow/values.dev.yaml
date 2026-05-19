@@ -1,0 +1,8 @@
+mlflow:
+  serviceAccount:
+    annotations:
+      # Set this to an IAM role with permissions to write to the configured S3 bucket.
+      eks.amazonaws.com/role-arn: "arn:aws:iam::266294491328:role/dev-mlflow"
+  artifactRoot:
+    s3:
+      bucket: dev-mlflow-artifacts

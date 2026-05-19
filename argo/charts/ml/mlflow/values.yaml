@@ -1,0 +1,51 @@
+mlflow:
+  enabled: true
+  serviceAccount:
+    create: true
+    name: mlflow
+    annotations:
+      eks.amazonaws.com/audience: "sts.amazonaws.com"
+  backendStore:
+    databaseMigration: true
+    databaseConnectionCheck: true
+    postgres:
+      enabled: true
+      host: postgres.postgres.svc.cluster.local
+      port: 5432
+      database: mlflow
+      driver: psycopg2
+    existingDatabaseSecret:
+      name: postgres-platform
+      usernameKey: username
+      passwordKey: password
+  artifactRoot:
+    proxiedArtifactStorage: true
+    s3:
+      enabled: true
+      path: "playground/"
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: monitoring
+    interval: 30s
+  extraEnvVars:
+    AWS_DEFAULT_REGION: eu-west-1
+bootstrapDatabase:
+  enabled: true
+  # Expects a secret projected to this namespace with keys:
+  # username, password, host, port and optionally database.
+  secretName: postgres-platform
+  secretKeys:
+    username: username
+    password: password
+    host: host
+    port: port
+    database: database
+  # Database to create in the shared Postgres instance.
+  databaseName: mlflow
+  image:
+    repository: postgres
+    tag: "16"
+    pullPolicy: IfNotPresent
+  backoffLimit: 6
+  activeDeadlineSeconds: 300

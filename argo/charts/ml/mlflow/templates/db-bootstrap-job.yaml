@@ -1,0 +1,65 @@
+{{- if .Values.bootstrapDatabase.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "playground.mlflow.fullname" . }}-db-bootstrap
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  backoffLimit: {{ .Values.bootstrapDatabase.backoffLimit }}
+  activeDeadlineSeconds: {{ .Values.bootstrapDatabase.activeDeadlineSeconds }}
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: db-bootstrap
+          image: "{{ .Values.bootstrapDatabase.image.repository }}:{{ .Values.bootstrapDatabase.image.tag }}"
+          imagePullPolicy: {{ .Values.bootstrapDatabase.image.pullPolicy }}
+          env:
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.bootstrapDatabase.secretName }}
+                  key: {{ .Values.bootstrapDatabase.secretKeys.username }}
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.bootstrapDatabase.secretName }}
+                  key: {{ .Values.bootstrapDatabase.secretKeys.password }}
+            - name: PGHOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.bootstrapDatabase.secretName }}
+                  key: {{ .Values.bootstrapDatabase.secretKeys.host }}
+            - name: PGPORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.bootstrapDatabase.secretName }}
+                  key: {{ .Values.bootstrapDatabase.secretKeys.port }}
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.bootstrapDatabase.secretName }}
+                  key: {{ .Values.bootstrapDatabase.secretKeys.database }}
+                  optional: true
+            - name: MLFLOW_DATABASE_NAME
+              value: {{ .Values.mlflow.database.postgres.database | quote }}
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              if [ -z "${PGDATABASE:-}" ]; then
+                PGDATABASE=postgres
+              fi
+
+              exists="$(psql -v ON_ERROR_STOP=1 -Atqc "SELECT 1 FROM pg_database WHERE datname='${MLFLOW_DATABASE_NAME}'" || true)"
+              if [ "$exists" = "1" ]; then
+                echo "database ${MLFLOW_DATABASE_NAME} already exists"
+                exit 0
+              fi
+
+              psql -v ON_ERROR_STOP=1 -c "CREATE DATABASE \"${MLFLOW_DATABASE_NAME}\""
+              echo "database ${MLFLOW_DATABASE_NAME} created"
+{{- end }}
