@@ -41,8 +41,8 @@ renovate:
     existingSecret: renovate-secrets
     mendRnvSyncOnStartup: "true"
     mendRnvSyncMode: bulk
-    mendRnvCronJobSchedulerAll: "0 */10 * * *"
-    mendRnvCronAppSync: "0 */10 * * *"
+    mendRnvCronJobSchedulerAll: "*/10 * * * *"
+    mendRnvCronAppSync: "*/10 * * * *"
     mendRnvForksProcessing: disabled
     mendRnvLogHistoryTTLDays: 7
     mendRnvLogHistoryCleanupCron: "0 0 * * *"
