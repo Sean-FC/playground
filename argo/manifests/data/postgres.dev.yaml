@@ -8,6 +8,12 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: postgres
+    annotations:
+      argocd-diff-preview/watch-pattern: |
+        argo/charts/data/postgres/templates/.*,
+        argo/charts/data/postgres/values.*\.ya?ml,
+        argo/charts/data/postgres/Chart\.yaml,
+        argo/charts/data/postgres/Chart\.lock
   syncPolicy:
     automated:
       prune: true

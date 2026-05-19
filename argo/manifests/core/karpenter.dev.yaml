@@ -8,6 +8,12 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: karpenter
+    annotations:
+      argocd-diff-preview/watch-pattern: |
+        argo/charts/core/karpenter/templates/.*,
+        argo/charts/core/karpenter/values.*\.ya?ml,
+        argo/charts/core/karpenter/Chart\.yaml,
+        argo/charts/core/karpenter/Chart\.lock
   syncPolicy:
     automated:
       prune: true

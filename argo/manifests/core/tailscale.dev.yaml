@@ -8,6 +8,12 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: tailscale
+    annotations:
+      argocd-diff-preview/watch-pattern: |
+        argo/charts/core/tailscale/templates/.*,
+        argo/charts/core/tailscale/values.*\.ya?ml,
+        argo/charts/core/tailscale/Chart\.yaml,
+        argo/charts/core/tailscale/Chart\.lock
   syncPolicy:
     automated:
       prune: true
