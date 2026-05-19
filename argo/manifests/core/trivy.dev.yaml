@@ -3,17 +3,17 @@ kind: Application
 metadata:
   name: trivy
   namespace: argo
+  annotations:
+    argocd-diff-preview/watch-pattern: |
+      argo/charts/core/trivy/templates/.*,
+      argo/charts/core/trivy/values.*\.ya?ml,
+      argo/charts/core/trivy/Chart\.yaml,
+      argo/charts/core/trivy/Chart\.lock
 spec:
   project: core
   destination:
     server: https://kubernetes.default.svc
     namespace: trivy
-    annotations:
-      argocd-diff-preview/watch-pattern: |
-        argo/charts/core/trivy/templates/.*,
-        argo/charts/core/trivy/values.*\.ya?ml,
-        argo/charts/core/trivy/Chart\.yaml,
-        argo/charts/core/trivy/Chart\.lock
   syncPolicy:
     automated:
       prune: true

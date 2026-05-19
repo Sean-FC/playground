@@ -3,17 +3,17 @@ kind: Application
 metadata:
   name: oauth2-proxy
   namespace: argo
+  annotations:
+    argocd-diff-preview/watch-pattern: |
+      argo/charts/core/oauth2-proxy/templates/.*,
+      argo/charts/core/oauth2-proxy/values.*\.ya?ml,
+      argo/charts/core/oauth2-proxy/Chart\.yaml,
+      argo/charts/core/oauth2-proxy/Chart\.lock
 spec:
   project: core
   destination:
     server: https://kubernetes.default.svc
     namespace: oauth2-proxy
-    annotations:
-      argocd-diff-preview/watch-pattern: |
-        argo/charts/core/oauth2-proxy/templates/.*,
-        argo/charts/core/oauth2-proxy/values.*\.ya?ml,
-        argo/charts/core/oauth2-proxy/Chart\.yaml,
-        argo/charts/core/oauth2-proxy/Chart\.lock
   syncPolicy:
     automated:
       prune: true

@@ -3,17 +3,17 @@ kind: Application
 metadata:
   name: ray
   namespace: argo
+  annotations:
+    argocd-diff-preview/watch-pattern: |
+      argo/charts/ml/ray/templates/.*,
+      argo/charts/ml/ray/values.*\.ya?ml,
+      argo/charts/ml/ray/Chart\.yaml,
+      argo/charts/ml/ray/Chart\.lock
 spec:
   project: ml
   destination:
     server: https://kubernetes.default.svc
     namespace: ray
-    annotations:
-      argocd-diff-preview/watch-pattern: |
-        argo/charts/ml/ray/templates/.*,
-        argo/charts/ml/ray/values.*\.ya?ml,
-        argo/charts/ml/ray/Chart\.yaml,
-        argo/charts/ml/ray/Chart\.lock
   syncPolicy:
     automated:
       prune: true

@@ -3,17 +3,17 @@ kind: Application
 metadata:
   name: goldilocks
   namespace: argo
+  annotations:
+    argocd-diff-preview/watch-pattern: |
+      argo/charts/core/goldilocks/templates/.*,
+      argo/charts/core/goldilocks/values.*\.ya?ml,
+      argo/charts/core/goldilocks/Chart\.yaml,
+      argo/charts/core/goldilocks/Chart\.lock
 spec:
   project: core
   destination:
     server: https://kubernetes.default.svc
     namespace: goldilocks
-    annotations:
-      argocd-diff-preview/watch-pattern: |
-        argo/charts/core/goldilocks/templates/.*,
-        argo/charts/core/goldilocks/values.*\.ya?ml,
-        argo/charts/core/goldilocks/Chart\.yaml,
-        argo/charts/core/goldilocks/Chart\.lock
   syncPolicy:
     automated:
       prune: true
