@@ -9,7 +9,9 @@ spec:
     server: https://kubernetes.default.svc
     namespace: oauth2-proxy
   syncPolicy:
-    automated: {}
+    automated:
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true
   source:
