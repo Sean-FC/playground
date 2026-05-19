@@ -313,6 +313,6 @@
       ]
     }
   ],
-  "prConcurrentLimit": 5,
-  "prHourlyLimit": 2
+  "prConcurrentLimit": 20,
+  "prHourlyLimit": 10
 }

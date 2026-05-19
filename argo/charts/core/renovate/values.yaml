@@ -32,8 +32,8 @@ renovate:
       cpu: 100m
       memory: 256Mi
     limits:
-      cpu: 250m
-      memory: 512Mi
+      cpu: 500m
+      memory: 2048Mi
   renovate:
     mendRnvAcceptTos: "y"
     mendRnvPlatform: github
@@ -41,8 +41,8 @@ renovate:
     existingSecret: renovate-secrets
     mendRnvSyncOnStartup: "true"
     mendRnvSyncMode: bulk
-    mendRnvCronJobSchedulerAll: "0 */6 * * *"
-    mendRnvCronAppSync: "0 */6 * * *"
+    mendRnvCronJobSchedulerAll: "*/10 * * * *"
+    mendRnvCronAppSync: "*/10 * * * *"
     mendRnvForksProcessing: disabled
     mendRnvLogHistoryTTLDays: 7
     mendRnvLogHistoryCleanupCron: "0 0 * * *"
