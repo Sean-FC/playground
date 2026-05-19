@@ -21,6 +21,13 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.sha }}
           path: primary
+      - name: Detect changed files
+        id: changed
+        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
+        with:
+          separator: ","
+          files: |
+            argo/charts/**
       - name: Generate Diff
         env:
           IMAGE_DIGEST: "sha256:be51cde7afa24d8463b370169ca740179f6ade697ac18406dc5b45b048d1e48c" # v0.2.7
@@ -37,8 +44,10 @@ jobs:
             "dagandersen/argocd-diff-preview@${IMAGE_DIGEST}" \
             --target-branch="refs/pull/${{ github.event.number }}/merge" \
             --repo="${{ github.repository }}" \
-            --auto-detect-files-changed=true \
-            --watch-if-no-watch-pattern-found=false
+            --auto-detect-files-changed=false \
+            --watch-if-no-watch-pattern-found=false \
+            --files-changed="${{ steps.changed.outputs.all_changed_files }}" \
+            --debug
       - name: Upsert diff as comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
