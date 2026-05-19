@@ -21,6 +21,43 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.sha }}
           path: primary
+      - name: Detect changed files
+        id: changed
+        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
+        with:
+          separator: ","
+          files: |
+            argo/charts/**
+      - name: Check secret is present
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${ARGOCD_DIFF_PREVIEW_SSH_KEY}" ]]; then
+            echo "Secret is empty/missing"
+            exit 1
+          fi
+          echo "Secret is present (length: ${#ARGOCD_DIFF_PREVIEW_SSH_KEY})"
+        env:
+          ARGOCD_DIFF_PREVIEW_SSH_KEY: ${{ secrets.ARGOCD_DIFF_PREVIEW_SSH_KEY }}
+      - name: Prepare secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p secrets
+          cat > secrets/secret.yaml <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: private-repo
+            namespace: argocd
+            labels:
+              argocd.argoproj.io/secret-type: repo-creds
+          stringData:
+            type: git
+            url: git@github.com:${{ github.repository }}.git
+            sshPrivateKey: |
+          $(echo "${{ secrets.ARGOCD_DIFF_PREVIEW_SSH_KEY }}" | sed 's/^/        /')
+          EOF
       - name: Generate Diff
         env:
           IMAGE_DIGEST: "sha256:be51cde7afa24d8463b370169ca740179f6ade697ac18406dc5b45b048d1e48c" # v0.2.7
@@ -34,11 +71,15 @@ jobs:
             -v "${PWD}/primary:/base-branch" \
             -v "${PWD}/pull-request:/target-branch" \
             -v "${PWD}/output:/output" \
+            -v "${PWD}/secrets:/secrets" \
             "dagandersen/argocd-diff-preview@${IMAGE_DIGEST}" \
             --target-branch="refs/pull/${{ github.event.number }}/merge" \
             --repo="${{ github.repository }}" \
-            --auto-detect-files-changed=true \
-            --watch-if-no-watch-pattern-found=false
+            --secrets-folder=/secrets \
+            --auto-detect-files-changed=false \
+            --watch-if-no-watch-pattern-found=false \
+            --files-changed="${{ steps.changed.outputs.all_changed_files }}" \
+            --debug
       - name: Upsert diff as comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

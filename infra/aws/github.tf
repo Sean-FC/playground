@@ -16,6 +16,12 @@ resource "github_repository_deploy_key" "argocd" {
   read_only  = true
 }
 
+resource "github_actions_secret" "argocd_diff_preview_ssh_key" {
+  repository      = local.github.repo
+  secret_name     = "ARGOCD_DIFF_PREVIEW_SSH_KEY"
+  plaintext_value = tls_private_key.argocd_deploy_key.private_key_openssh
+}
+
 resource "aws_ssm_parameter" "github_actions_runners" {
   name = "/${module.context.stage}/eso/github-actions-runners"
   type = "SecureString"
