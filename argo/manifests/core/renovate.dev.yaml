@@ -9,7 +9,9 @@ spec:
     server: https://kubernetes.default.svc
     namespace: renovate
   syncPolicy:
-    automated: {}
+    automated:
+      prune: true
+      selfHeal: true
     syncOptions:
       - CreateNamespace=true
     managedNamespaceMetadata:
