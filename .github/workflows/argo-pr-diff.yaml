@@ -1,0 +1,69 @@
+name: Generate Argo Chart Diff
+on:
+  pull_request_target:
+    types: [labeled, synchronize, reopened]
+concurrency:
+  group: chart-diff-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  render-diff:
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'argo-charts') && github.event.pull_request.head.repo.fork == false
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@064fe7f3312418007dea2b49a19844a9ee378f49 # v6.0.2
+        with:
+          ref: refs/pull/${{ github.event.number }}/merge
+          path: pull-request
+      - uses: actions/checkout@064fe7f3312418007dea2b49a19844a9ee378f49 # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: primary
+      - name: Generate Diff
+        env:
+          IMAGE_DIGEST: "sha256:be51cde7afa24d8463b370169ca740179f6ade697ac18406dc5b45b048d1e48c" # v0.2.7
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker run \
+            --network=host \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${PWD}/primary:/base-branch" \
+            -v "${PWD}/pull-request:/target-branch" \
+            -v "${PWD}/output:/output" \
+            -e TARGET_BRANCH=refs/pull/${{ github.event.number }}/merge \
+            -e REPO=${{ github.repository }} \
+            "dagandersen/argocd-diff-preview@${IMAGE_DIGEST}"
+      - name: Upsert diff as comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          marker="<!-- argo-pr-diff-comment -->"
+
+          body_file="$(mktemp)"
+          {
+            echo "${marker}"
+            echo
+            cat output/diff.md
+          } > "${body_file}"
+
+          comment_id="$(
+            gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" --paginate \
+              --jq ".[] | select(.user.login == \"github-actions[bot]\") | select(.body | contains(\"${marker}\")) | .id" \
+              | head -n1
+          )"
+
+          if [[ -n "${comment_id}" ]]; then
+            gh api -X PATCH "repos/${REPO}/issues/comments/${comment_id}" \
+              -f body@"${body_file}" >/dev/null
+          else
+            gh pr comment "${PR_NUMBER}" --repo "${REPO}" --body-file "${body_file}"
+          fi
