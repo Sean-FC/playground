@@ -3,6 +3,12 @@ kind: Application
 metadata:
   name: cert-manager
   namespace: argo
+  annotations:
+    argocd-diff-preview/watch-pattern: |
+      argo/charts/core/cert-manager/templates/.*,
+      argo/charts/core/cert-manager/values.*\.ya?ml,
+      argo/charts/core/cert-manager/Chart\.yaml,
+      argo/charts/core/cert-manager/Chart\.lock
 spec:
   project: core
   destination:

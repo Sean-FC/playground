@@ -3,6 +3,12 @@ kind: Application
 metadata:
   name: aws-ebs-csi-driver
   namespace: argo
+  annotations:
+    argocd-diff-preview/watch-pattern: |
+      argo/charts/core/aws-ebs-csi-driver/templates/.*,
+      argo/charts/core/aws-ebs-csi-driver/values.*\.ya?ml,
+      argo/charts/core/aws-ebs-csi-driver/Chart\.yaml,
+      argo/charts/core/aws-ebs-csi-driver/Chart\.lock
 spec:
   project: core
   destination:

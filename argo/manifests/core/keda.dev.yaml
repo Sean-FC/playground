@@ -8,6 +8,12 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: keda
+    annotations:
+      argocd-diff-preview/watch-pattern: |
+        argo/charts/core/keda/templates/.*,
+        argo/charts/core/keda/values.*\.ya?ml,
+        argo/charts/core/keda/Chart\.yaml,
+        argo/charts/core/keda/Chart\.lock
   syncPolicy:
     automated:
       prune: true

@@ -3,6 +3,12 @@ kind: Application
 metadata:
   name: irsa
   namespace: argo
+  annotations:
+    argocd-diff-preview/watch-pattern: |
+      argo/charts/core/amazon-eks-pod-identity-webhook/templates/.*,
+      argo/charts/core/amazon-eks-pod-identity-webhook/values.*\.ya?ml,
+      argo/charts/core/amazon-eks-pod-identity-webhook/Chart\.yaml,
+      argo/charts/core/amazon-eks-pod-identity-webhook/Chart\.lock
 spec:
   project: core
   destination:

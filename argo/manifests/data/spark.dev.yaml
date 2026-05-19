@@ -8,6 +8,12 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: spark
+    annotations:
+      argocd-diff-preview/watch-pattern: |
+        argo/charts/data/spark/templates/.*,
+        argo/charts/data/spark/values.*\.ya?ml,
+        argo/charts/data/spark/Chart\.yaml,
+        argo/charts/data/spark/Chart\.lock
   syncPolicy:
     automated:
       prune: true

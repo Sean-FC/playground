@@ -8,6 +8,12 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: reloader
+    annotations:
+      argocd-diff-preview/watch-pattern: |
+        argo/charts/core/reloader/templates/.*,
+        argo/charts/core/reloader/values.*\.ya?ml,
+        argo/charts/core/reloader/Chart\.yaml,
+        argo/charts/core/reloader/Chart\.lock
   syncPolicy:
     automated:
       prune: true

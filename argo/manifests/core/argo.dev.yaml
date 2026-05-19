@@ -3,6 +3,12 @@ kind: Application
 metadata:
   name: argo
   namespace: argo
+  annotations:
+    argocd-diff-preview/watch-pattern: |
+      argo/charts/core/argo/templates/.*,
+      argo/charts/core/argo/values.*\.ya?ml,
+      argo/charts/core/argo/Chart\.yaml,
+      argo/charts/core/argo/Chart\.lock
 spec:
   project: core
   destination:

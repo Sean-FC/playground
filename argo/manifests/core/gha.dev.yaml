@@ -8,6 +8,12 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: gha
+    annotations:
+      argocd-diff-preview/watch-pattern: |
+        argo/charts/core/gha/templates/.*,
+        argo/charts/core/gha/values.*\.ya?ml,
+        argo/charts/core/gha/Chart\.yaml,
+        argo/charts/core/gha/Chart\.lock
   syncPolicy:
     automated:
       prune: true

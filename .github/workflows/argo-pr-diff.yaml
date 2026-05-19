@@ -34,9 +34,10 @@ jobs:
             -v "${PWD}/primary:/base-branch" \
             -v "${PWD}/pull-request:/target-branch" \
             -v "${PWD}/output:/output" \
-            -e TARGET_BRANCH=refs/pull/${{ github.event.number }}/merge \
-            -e REPO=${{ github.repository }} \
-            "dagandersen/argocd-diff-preview@${IMAGE_DIGEST}"
+            "dagandersen/argocd-diff-preview@${IMAGE_DIGEST}" \
+            --target-branch="refs/pull/${{ github.event.number }}/merge" \
+            --repo="${{ github.repository }}" \
+            --auto-detect-files-changed=true \
       - name: Upsert diff as comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
