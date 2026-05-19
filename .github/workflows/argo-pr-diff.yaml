@@ -23,7 +23,7 @@ jobs:
           path: primary
       - name: Generate Diff
         env:
-          IMAGE_TAG: v0.2.7
+          IMAGE_DIGEST: "sha256:be51cde7afa24d8463b370169ca740179f6ade697ac18406dc5b45b048d1e48c" # v0.2.7
         shell: bash
         run: |
           set -euo pipefail
@@ -36,7 +36,7 @@ jobs:
             -v "${PWD}/output:/output" \
             -e TARGET_BRANCH=refs/pull/${{ github.event.number }}/merge \
             -e REPO=${{ github.repository }} \
-            "dagandersen/argocd-diff-preview:${IMAGE_TAG}"
+            "dagandersen/argocd-diff-preview@${IMAGE_DIGEST}"
       - name: Upsert diff as comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
