@@ -9,6 +9,9 @@ jobs:
   render-diff:
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'argo-charts') && github.event.pull_request.head.repo.fork == false
+    outputs:
+      diagram_matrix: ${{ steps.collect-target-manifests.outputs.diagram_matrix }}
+      rendered_app_count: ${{ steps.collect-target-manifests.outputs.rendered_app_count }}
     permissions:
       contents: read
       pull-requests: write
@@ -79,7 +82,7 @@ jobs:
             --auto-detect-files-changed=false \
             --watch-if-no-watch-pattern-found=false \
             --files-changed="${{ steps.changed.outputs.all_changed_files }}" \
-            --debug
+            --output-app-manifests
       - name: Upsert diff as comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -105,8 +108,139 @@ jobs:
           )"
 
           if [[ -n "${comment_id}" ]]; then
+            body="$(cat "${body_file}")"
             gh api -X PATCH "repos/${REPO}/issues/comments/${comment_id}" \
-              -f body@"${body_file}" >/dev/null
+              -f body="${body}" >/dev/null
+          else
+            gh pr comment "${PR_NUMBER}" --repo "${REPO}" --body-file "${body_file}"
+          fi
+      - name: Collect target app manifests
+        id: collect-target-manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ ! -d output/target ]]; then
+            echo 'diagram_matrix={"include":[]}' >> "${GITHUB_OUTPUT}"
+            echo 'rendered_app_count=0' >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          diagram_matrix="$(
+            find output/target -maxdepth 1 -type f -print \
+              | sort \
+              | jq -R '
+                  capture("^output/target/(?<app>.*?)(?:\\.ya?ml)?$") as $match |
+                  {
+                    "app": $match.app,
+                    "manifest": .,
+                    "diagram": ("output/diagram/" + $match.app + ".png")
+                  }
+                ' \
+              | jq -cs -c '{"include": .}'
+          )"
+
+          rendered_app_count="$(jq -r '.include | length' <<< "${diagram_matrix}")"
+
+          echo "diagram_matrix=${diagram_matrix}" >> "${GITHUB_OUTPUT}"
+          echo "rendered_app_count=${rendered_app_count}" >> "${GITHUB_OUTPUT}"
+      - name: Upload rendered manifest artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: argo-rendered-target-manifests
+          path: output/target
+          if-no-files-found: warn
+  render-kubediagrams:
+    needs: [render-diff]
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'argo-charts') && github.event.pull_request.head.repo.fork == false && needs.render-diff.outputs.rendered_app_count != '0'
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.render-diff.outputs.diagram_matrix) }}
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Download rendered manifest artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: argo-rendered-target-manifests
+          path: output/target
+      - name: Prepare diagram directory
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p output/diagram
+      - name: Generate KubeDiagram
+        uses: philippemerle/KubeDiagrams@main
+        with:
+          type: "kubernetes"
+          args: "-o ${{ matrix.diagram }} ${{ matrix.manifest }}"
+      - name: Upload KubeDiagram artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: argo-kubediagram-${{ matrix.app }}
+          path: ${{ matrix.diagram }}
+          archive: false
+          if-no-files-found: error
+  comment-kubediagrams:
+    needs: [render-diff, render-kubediagrams]
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'argo-charts') && github.event.pull_request.head.repo.fork == false && needs.render-diff.outputs.rendered_app_count != '0'
+    permissions:
+      actions: read
+      pull-requests: write
+    steps:
+      - name: Upsert KubeDiagram comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          artifact_lines="$(
+            gh api "repos/${REPO}/actions/runs/${GITHUB_RUN_ID}/artifacts" --paginate \
+              --jq ".artifacts[] | select(.name | endswith(\".png\")) | [.name, .id] | @tsv" \
+              | sort \
+              | while IFS="$(printf '\t')" read -r name artifact_id; do
+                  app_name="${name%.png}"
+                  artifact_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts/${artifact_id}"
+                  printf -- "- \`%s\`: [open diagram](%s)\n" "${app_name}" "${artifact_url}"
+                done
+          )"
+
+          marker="<!-- argo-kubediagram-comment -->"
+
+          body_file="$(mktemp)"
+          {
+            echo "${marker}"
+            echo
+            echo "### Argo desired-state KubeDiagram"
+            echo
+            echo "Generated per rendered target application from \`argocd-diff-preview --output-app-manifests\`."
+            echo
+            if [[ -n "${artifact_lines}" ]]; then
+              printf '%s\n' "${artifact_lines}"
+            else
+              echo "No KubeDiagram artifacts were found for this workflow run."
+            fi
+            echo
+            echo "Workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          } > "${body_file}"
+
+          comment_id="$(
+            gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" --paginate \
+              --jq ".[] | select(.user.login == \"github-actions[bot]\") | select(.body | contains(\"${marker}\")) | .id" \
+              | head -n1
+          )"
+
+          if [[ -n "${comment_id}" ]]; then
+            body="$(cat "${body_file}")"
+            gh api -X PATCH "repos/${REPO}/issues/comments/${comment_id}" \
+              -f body="${body}" >/dev/null
           else
             gh pr comment "${PR_NUMBER}" --repo "${REPO}" --body-file "${body_file}"
           fi
