@@ -1,0 +1,1143 @@
+{
+  "active": false,
+  "connections": {
+    "Collect MCP results": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Render digest",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Daily 08:00": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "MCP events_list",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "MCP pods_list",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "MCP deployments",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "MCP jobs",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "MCP pvcs",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "MCP nodes",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "MCP argo applications",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "MCP certificates",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "MCP external secrets",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "MCP argo applications": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Wrap argo applications",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "MCP certificates": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Wrap certificates",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "MCP deployments": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Wrap deployments",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "MCP events_list": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Wrap events",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "MCP external secrets": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Wrap external secrets",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "MCP jobs": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Wrap jobs",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "MCP nodes": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Wrap nodes",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "MCP pods_list": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Wrap pods",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "MCP pvcs": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Wrap pvcs",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Render digest": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Send Slack digest",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Wrap argo applications": {
+      "main": [
+        [
+          {
+            "index": 6,
+            "node": "Collect MCP results",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Wrap certificates": {
+      "main": [
+        [
+          {
+            "index": 7,
+            "node": "Collect MCP results",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Wrap deployments": {
+      "main": [
+        [
+          {
+            "index": 2,
+            "node": "Collect MCP results",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Wrap events": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Collect MCP results",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Wrap external secrets": {
+      "main": [
+        [
+          {
+            "index": 8,
+            "node": "Collect MCP results",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Wrap jobs": {
+      "main": [
+        [
+          {
+            "index": 3,
+            "node": "Collect MCP results",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Wrap nodes": {
+      "main": [
+        [
+          {
+            "index": 5,
+            "node": "Collect MCP results",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Wrap pods": {
+      "main": [
+        [
+          {
+            "index": 1,
+            "node": "Collect MCP results",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Wrap pvcs": {
+      "main": [
+        [
+          {
+            "index": 4,
+            "node": "Collect MCP results",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "name": "Daily Kubernetes MCP health Slack digest",
+  "nodes": [
+    {
+      "id": "4b7ff5d6-4491-4e0f-b54a-cb20c6b6f372",
+      "name": "Daily 08:00",
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "expression": "0 8 * * *",
+              "field": "cronExpression"
+            }
+          ]
+        }
+      },
+      "position": [
+        -980,
+        0
+      ],
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2
+    },
+    {
+      "id": "5f550b14-b1dd-4187-a6fa-e50ccabce113",
+      "name": "MCP events_list",
+      "parameters": {
+        "authentication": "none",
+        "endpointUrl": "http://k8s.mcps.svc.cluster.local:8080/mcp",
+        "options": {},
+        "parameters": {
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false,
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "schema": [
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "context",
+              "id": "context",
+              "removed": false,
+              "required": false,
+              "type": "string"
+            }
+          ],
+          "value": {
+            "context": "default"
+          }
+        },
+        "tool": {
+          "__rl": true,
+          "cachedResultName": "events_list",
+          "mode": "list",
+          "value": "events_list"
+        }
+      },
+      "position": [
+        -720,
+        -500
+      ],
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1
+    },
+    {
+      "id": "5c92e2f0-61fb-4a1d-99e2-dd616aa1fb0e",
+      "name": "MCP pods_list",
+      "parameters": {
+        "authentication": "none",
+        "endpointUrl": "http://k8s.mcps.svc.cluster.local:8080/mcp",
+        "options": {},
+        "parameters": {
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false,
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "schema": [
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "context",
+              "id": "context",
+              "removed": false,
+              "required": false,
+              "type": "string"
+            }
+          ],
+          "value": {
+            "context": "default"
+          }
+        },
+        "tool": {
+          "__rl": true,
+          "cachedResultName": "pods_list",
+          "mode": "list",
+          "value": "pods_list"
+        }
+      },
+      "position": [
+        -720,
+        -360
+      ],
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1
+    },
+    {
+      "id": "278f3aba-eccc-4c93-8e4b-b0e1eef06595",
+      "name": "MCP deployments",
+      "parameters": {
+        "authentication": "none",
+        "endpointUrl": "http://k8s.mcps.svc.cluster.local:8080/mcp",
+        "options": {},
+        "parameters": {
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false,
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "schema": [
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "context",
+              "id": "context",
+              "removed": false,
+              "required": false,
+              "type": "string"
+            },
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "apiVersion",
+              "id": "apiVersion",
+              "removed": false,
+              "required": true,
+              "type": "string"
+            },
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "kind",
+              "id": "kind",
+              "removed": false,
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "value": {
+            "apiVersion": "apps/v1",
+            "context": "default",
+            "kind": "Deployment"
+          }
+        },
+        "tool": {
+          "__rl": true,
+          "cachedResultName": "resources_list",
+          "mode": "list",
+          "value": "resources_list"
+        }
+      },
+      "position": [
+        -720,
+        -220
+      ],
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1
+    },
+    {
+      "id": "f09ed8f2-7acb-4110-a21e-0ff4a93ec8c8",
+      "name": "MCP jobs",
+      "parameters": {
+        "authentication": "none",
+        "endpointUrl": "http://k8s.mcps.svc.cluster.local:8080/mcp",
+        "options": {},
+        "parameters": {
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false,
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "schema": [
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "context",
+              "id": "context",
+              "removed": false,
+              "required": false,
+              "type": "string"
+            },
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "apiVersion",
+              "id": "apiVersion",
+              "removed": false,
+              "required": true,
+              "type": "string"
+            },
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "kind",
+              "id": "kind",
+              "removed": false,
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "value": {
+            "apiVersion": "batch/v1",
+            "context": "default",
+            "kind": "Job"
+          }
+        },
+        "tool": {
+          "__rl": true,
+          "cachedResultName": "resources_list",
+          "mode": "list",
+          "value": "resources_list"
+        }
+      },
+      "position": [
+        -720,
+        -80
+      ],
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1
+    },
+    {
+      "id": "d1a21acb-077a-48e8-a0d4-947362a8ded2",
+      "name": "MCP pvcs",
+      "parameters": {
+        "authentication": "none",
+        "endpointUrl": "http://k8s.mcps.svc.cluster.local:8080/mcp",
+        "options": {},
+        "parameters": {
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false,
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "schema": [
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "context",
+              "id": "context",
+              "removed": false,
+              "required": false,
+              "type": "string"
+            },
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "apiVersion",
+              "id": "apiVersion",
+              "removed": false,
+              "required": true,
+              "type": "string"
+            },
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "kind",
+              "id": "kind",
+              "removed": false,
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "value": {
+            "apiVersion": "v1",
+            "context": "default",
+            "kind": "PersistentVolumeClaim"
+          }
+        },
+        "tool": {
+          "__rl": true,
+          "cachedResultName": "resources_list",
+          "mode": "list",
+          "value": "resources_list"
+        }
+      },
+      "position": [
+        -720,
+        60
+      ],
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1
+    },
+    {
+      "id": "c4ed663c-b72d-4d06-8670-bc2a4d580ad0",
+      "name": "MCP nodes",
+      "parameters": {
+        "authentication": "none",
+        "endpointUrl": "http://k8s.mcps.svc.cluster.local:8080/mcp",
+        "options": {},
+        "parameters": {
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false,
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "schema": [
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "context",
+              "id": "context",
+              "removed": false,
+              "required": false,
+              "type": "string"
+            },
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "apiVersion",
+              "id": "apiVersion",
+              "removed": false,
+              "required": true,
+              "type": "string"
+            },
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "kind",
+              "id": "kind",
+              "removed": false,
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "value": {
+            "apiVersion": "v1",
+            "context": "default",
+            "kind": "Node"
+          }
+        },
+        "tool": {
+          "__rl": true,
+          "cachedResultName": "resources_list",
+          "mode": "list",
+          "value": "resources_list"
+        }
+      },
+      "position": [
+        -720,
+        200
+      ],
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1
+    },
+    {
+      "id": "bd221419-d78a-485a-a6d9-4305a07dc2aa",
+      "name": "MCP argo applications",
+      "parameters": {
+        "authentication": "none",
+        "endpointUrl": "http://k8s.mcps.svc.cluster.local:8080/mcp",
+        "options": {},
+        "parameters": {
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false,
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "schema": [
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "context",
+              "id": "context",
+              "removed": false,
+              "required": false,
+              "type": "string"
+            },
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "apiVersion",
+              "id": "apiVersion",
+              "removed": false,
+              "required": true,
+              "type": "string"
+            },
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "kind",
+              "id": "kind",
+              "removed": false,
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "value": {
+            "apiVersion": "argoproj.io/v1alpha1",
+            "context": "default",
+            "kind": "Application"
+          }
+        },
+        "tool": {
+          "__rl": true,
+          "cachedResultName": "resources_list",
+          "mode": "list",
+          "value": "resources_list"
+        }
+      },
+      "position": [
+        -720,
+        340
+      ],
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1
+    },
+    {
+      "id": "3c8a05b7-8cc0-4490-8c2c-d68c6fa3a2d8",
+      "name": "MCP certificates",
+      "parameters": {
+        "authentication": "none",
+        "endpointUrl": "http://k8s.mcps.svc.cluster.local:8080/mcp",
+        "options": {},
+        "parameters": {
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false,
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "schema": [
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "context",
+              "id": "context",
+              "removed": false,
+              "required": false,
+              "type": "string"
+            },
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "apiVersion",
+              "id": "apiVersion",
+              "removed": false,
+              "required": true,
+              "type": "string"
+            },
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "kind",
+              "id": "kind",
+              "removed": false,
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "value": {
+            "apiVersion": "cert-manager.io/v1",
+            "context": "default",
+            "kind": "Certificate"
+          }
+        },
+        "tool": {
+          "__rl": true,
+          "cachedResultName": "resources_list",
+          "mode": "list",
+          "value": "resources_list"
+        }
+      },
+      "position": [
+        -720,
+        480
+      ],
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1
+    },
+    {
+      "id": "f642f5db-7e72-4f26-94ed-5ba815c05e7f",
+      "name": "MCP external secrets",
+      "parameters": {
+        "authentication": "none",
+        "endpointUrl": "http://k8s.mcps.svc.cluster.local:8080/mcp",
+        "options": {},
+        "parameters": {
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false,
+          "mappingMode": "defineBelow",
+          "matchingColumns": [],
+          "schema": [
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "context",
+              "id": "context",
+              "removed": false,
+              "required": false,
+              "type": "string"
+            },
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "apiVersion",
+              "id": "apiVersion",
+              "removed": false,
+              "required": true,
+              "type": "string"
+            },
+            {
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "kind",
+              "id": "kind",
+              "removed": false,
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "value": {
+            "apiVersion": "external-secrets.io/v1beta1",
+            "context": "default",
+            "kind": "ExternalSecret"
+          }
+        },
+        "tool": {
+          "__rl": true,
+          "cachedResultName": "resources_list",
+          "mode": "list",
+          "value": "resources_list"
+        }
+      },
+      "position": [
+        -720,
+        620
+      ],
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1
+    },
+    {
+      "id": "d91f1c75-cf25-4718-bd32-b50c13cf3018",
+      "name": "Wrap events",
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6b45ee6e-52ac-41f4-a75e-5f893e6c1303",
+              "name": "collection",
+              "type": "string",
+              "value": "events"
+            },
+            {
+              "id": "24f84b89-4f4c-43da-ac63-27392fe1ff08",
+              "name": "result",
+              "type": "object",
+              "value": "={{ $json }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "position": [
+        -420,
+        -500
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "id": "daf94eb7-a90a-4a17-b736-b571467a820c",
+      "name": "Wrap pods",
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "68d11431-0f19-43be-a868-3a30fcabfd84",
+              "name": "collection",
+              "type": "string",
+              "value": "pods"
+            },
+            {
+              "id": "e2956f47-126e-452c-8a06-f69111c2c1e7",
+              "name": "result",
+              "type": "object",
+              "value": "={{ $json }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "position": [
+        -420,
+        -360
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "id": "c7610307-9e2b-4f07-b81c-41f6476ff674",
+      "name": "Wrap deployments",
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "db5ad39e-1d32-4c1e-892c-db845f79987f",
+              "name": "collection",
+              "type": "string",
+              "value": "deployments"
+            },
+            {
+              "id": "553bf8ea-acbb-4ec1-b66e-2a65b2ca5c25",
+              "name": "result",
+              "type": "object",
+              "value": "={{ $json }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "position": [
+        -420,
+        -220
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "id": "e7c8bfef-578a-4411-a134-b8d533844ef7",
+      "name": "Wrap jobs",
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a54dd61c-a688-42ed-a01c-d9a149400983",
+              "name": "collection",
+              "type": "string",
+              "value": "jobs"
+            },
+            {
+              "id": "b0daf0d2-9c71-4e5a-9559-31dbec9b9a38",
+              "name": "result",
+              "type": "object",
+              "value": "={{ $json }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "position": [
+        -420,
+        -80
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "id": "e758e81b-e4ee-4d25-b2db-ff715b9369e7",
+      "name": "Wrap pvcs",
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0ebd0451-4662-47cf-a013-cf0a86ffcd7e",
+              "name": "collection",
+              "type": "string",
+              "value": "pvcs"
+            },
+            {
+              "id": "fe499487-6de1-47b8-9af7-e97dedbfad77",
+              "name": "result",
+              "type": "object",
+              "value": "={{ $json }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "position": [
+        -420,
+        60
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "id": "4b233c32-7275-42e5-a97b-64e235fd8b42",
+      "name": "Wrap nodes",
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "80618ff1-dbdd-487c-8087-94abf106d11d",
+              "name": "collection",
+              "type": "string",
+              "value": "nodes"
+            },
+            {
+              "id": "94ce1ad3-7ca2-44fa-b294-6d8a61f3260d",
+              "name": "result",
+              "type": "object",
+              "value": "={{ $json }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "position": [
+        -420,
+        200
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "id": "994b66a1-fec8-48ac-b17b-b2f9a27fbf65",
+      "name": "Wrap argo applications",
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "80eea842-42ad-4f49-8434-77c7d141f1b9",
+              "name": "collection",
+              "type": "string",
+              "value": "argoApplications"
+            },
+            {
+              "id": "41a1ad79-4d24-4da0-8059-d6789d6f13f8",
+              "name": "result",
+              "type": "object",
+              "value": "={{ $json }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "position": [
+        -420,
+        340
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "id": "c545ce0b-8985-4703-9f1f-d17a8850de01",
+      "name": "Wrap certificates",
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a3bb3b70-8316-4ff6-adb7-207a51fc273f",
+              "name": "collection",
+              "type": "string",
+              "value": "certificates"
+            },
+            {
+              "id": "a708e6ab-f7d1-4026-83ee-a58a29320633",
+              "name": "result",
+              "type": "object",
+              "value": "={{ $json }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "position": [
+        -420,
+        480
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "id": "bfa8d28c-9133-40a6-97ea-0fa032e51312",
+      "name": "Wrap external secrets",
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ba38c472-8500-4a61-a11f-d3b256fe5e84",
+              "name": "collection",
+              "type": "string",
+              "value": "externalSecrets"
+            },
+            {
+              "id": "161cc29e-7c85-450f-ac76-9cf15a41c353",
+              "name": "result",
+              "type": "object",
+              "value": "={{ $json }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "position": [
+        -420,
+        620
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "id": "6e24dca0-db6e-4a4f-aec7-f04c9801719e",
+      "name": "Collect MCP results",
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 9
+      },
+      "position": [
+        -100,
+        60
+      ],
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2
+    },
+    {
+      "id": "c64bd1ef-c078-48d8-bfe8-265790a7ce73",
+      "name": "Render digest",
+      "parameters": {
+        "jsCode": "const CONFIG = {\n  clusterName: 'dev',\n  lookbackHours: 24,\n  restartWarningThreshold: 5,\n  maxItemsPerSection: 25,\n  maxEvents: 50,\n};\n\nconst grouped = {};\nfor (const item of $input.all()) {\n  const collection = item.json.collection || 'unknown';\n  grouped[collection] ||= [];\n  grouped[collection].push(unwrapToolResult(item.json.result));\n}\n\nconst data = Object.fromEntries(Object.entries(grouped).map(([key, values]) => [key, normalizeList(values)]));\nconst findings = buildFindings(data);\nconst critical = findings.filter((finding) => finding.severity === 'critical');\nconst warnings = findings.filter((finding) => finding.severity === 'warning');\nconst info = buildInfo(data);\nconst overall = critical.length > 0 ? 'Needs attention' : warnings.length > 0 ? 'Warnings present' : 'Healthy';\nconst subject = `Daily cluster health digest: ${CONFIG.clusterName} - ${critical.length} critical, ${warnings.length} warnings`;\nconst html = renderHtml({ overall, critical, warnings, info });\n\nreturn [{ json: { subject, html, text: stripHtml(html), criticalCount: critical.length, warningCount: warnings.length } }];\n\nfunction buildFindings(data) {\n  const findings = [];\n  const since = Date.now() - CONFIG.lookbackHours * 60 * 60 * 1000;\n\n  for (const event of normalizeList(data.events).slice(0, CONFIG.maxEvents)) {\n    const type = event.type || event.eventType || event.reason;\n    const timestamp = Date.parse(event.lastTimestamp || event.eventTime || event.metadata?.creationTimestamp || '') || Date.now();\n    if (type !== 'Warning' || timestamp < since) continue;\n\n    const involved = event.involvedObject || event.regarding || {};\n    findings.push({\n      severity: 'warning',\n      namespace: event.metadata?.namespace || involved.namespace || 'cluster',\n      resource: compactResource(involved.kind, involved.name),\n      title: `${compactResource(involved.kind, involved.name)}: ${event.reason || 'Warning event'}`,\n      detail: event.message || event.note || 'Kubernetes warning event',\n      count: event.count || event.series?.count,\n    });\n  }\n\n  for (const pod of normalizeList(data.pods)) {\n    const ns = pod.metadata?.namespace || 'default';\n    const name = pod.metadata?.name || 'unknown-pod';\n    const phase = pod.status?.phase || 'Unknown';\n    if (!['Running', 'Succeeded'].includes(phase)) {\n      findings.push({ severity: phase === 'Failed' ? 'critical' : 'warning', namespace: ns, resource: `Pod/${name}`, title: `Pod/${name} is ${phase}`, detail: pod.status?.reason || pod.status?.message || 'Pod phase is not healthy' });\n    }\n\n    for (const status of pod.status?.containerStatuses || []) {\n      const waiting = status.state?.waiting;\n      if (waiting) {\n        const reason = waiting.reason || 'Waiting';\n        const severity = ['CrashLoopBackOff', 'ImagePullBackOff', 'ErrImagePull', 'CreateContainerConfigError'].includes(reason) ? 'critical' : 'warning';\n        findings.push({ severity, namespace: ns, resource: `Pod/${name}`, title: `Pod/${name}/${status.name}: ${reason}`, detail: waiting.message || 'Container is waiting' });\n      }\n\n      if ((status.restartCount || 0) >= CONFIG.restartWarningThreshold) {\n        findings.push({ severity: 'warning', namespace: ns, resource: `Pod/${name}`, title: `Pod/${name}/${status.name}: ${status.restartCount} restarts`, detail: `Restart count is at or above threshold ${CONFIG.restartWarningThreshold}` });\n      }\n    }\n  }\n\n  for (const deployment of normalizeList(data.deployments)) {\n    const desired = deployment.spec?.replicas ?? 1;\n    const available = deployment.status?.availableReplicas ?? 0;\n    if (desired > available) {\n      findings.push({ severity: available === 0 ? 'critical' : 'warning', namespace: deployment.metadata?.namespace || 'default', resource: `Deployment/${deployment.metadata?.name}`, title: `Deployment/${deployment.metadata?.name}: ${available}/${desired} replicas available`, detail: conditionMessage(deployment.status?.conditions) });\n    }\n  }\n\n  for (const job of normalizeList(data.jobs)) {\n    const startTime = Date.parse(job.status?.startTime || job.metadata?.creationTimestamp || '') || 0;\n    if ((job.status?.failed || 0) > 0 && startTime >= since) {\n      findings.push({ severity: 'warning', namespace: job.metadata?.namespace || 'default', resource: `Job/${job.metadata?.name}`, title: `Job/${job.metadata?.name}: ${job.status.failed} failed pod(s)`, detail: conditionMessage(job.status?.conditions) });\n    }\n  }\n\n  for (const pvc of normalizeList(data.pvcs)) {\n    if (pvc.status?.phase && pvc.status.phase !== 'Bound') {\n      findings.push({ severity: 'warning', namespace: pvc.metadata?.namespace || 'default', resource: `PersistentVolumeClaim/${pvc.metadata?.name}`, title: `PVC/${pvc.metadata?.name}: ${pvc.status.phase}`, detail: 'PersistentVolumeClaim is not bound' });\n    }\n  }\n\n  for (const node of normalizeList(data.nodes)) {\n    const conditions = node.status?.conditions || [];\n    const ready = conditions.find((condition) => condition.type === 'Ready');\n    if (ready && ready.status !== 'True') {\n      findings.push({ severity: 'critical', namespace: 'cluster', resource: `Node/${node.metadata?.name}`, title: `Node/${node.metadata?.name}: Ready=${ready.status}`, detail: ready.message || ready.reason || 'Node is not ready' });\n    }\n\n    for (const condition of conditions.filter((item) => ['DiskPressure', 'MemoryPressure', 'PIDPressure', 'NetworkUnavailable'].includes(item.type) && item.status === 'True')) {\n      findings.push({ severity: 'warning', namespace: 'cluster', resource: `Node/${node.metadata?.name}`, title: `Node/${node.metadata?.name}: ${condition.type}`, detail: condition.message || condition.reason || 'Node pressure condition is active' });\n    }\n  }\n\n  for (const app of normalizeList(data.argoApplications)) {\n    const sync = app.status?.sync?.status;\n    const health = app.status?.health?.status;\n    if ((sync && sync !== 'Synced') || (health && health !== 'Healthy')) {\n      findings.push({ severity: health === 'Degraded' ? 'critical' : 'warning', namespace: app.metadata?.namespace || 'argocd', resource: `Application/${app.metadata?.name}`, title: `Argo Application/${app.metadata?.name}: ${sync || 'Unknown sync'} / ${health || 'Unknown health'}`, detail: app.status?.conditions?.map((condition) => `${condition.type}: ${condition.message}`).join('; ') || 'Argo CD application is not healthy and synced' });\n    }\n  }\n\n  for (const cert of normalizeList(data.certificates)) {\n    const ready = findReadyCondition(cert);\n    if (ready && ready.status !== 'True') {\n      findings.push({ severity: 'warning', namespace: cert.metadata?.namespace || 'default', resource: `Certificate/${cert.metadata?.name}`, title: `Certificate/${cert.metadata?.name}: Ready=${ready.status}`, detail: ready.message || ready.reason || 'Certificate is not ready' });\n    }\n  }\n\n  for (const secret of normalizeList(data.externalSecrets)) {\n    const ready = findReadyCondition(secret);\n    if (ready && ready.status !== 'True') {\n      findings.push({ severity: 'warning', namespace: secret.metadata?.namespace || 'default', resource: `ExternalSecret/${secret.metadata?.name}`, title: `ExternalSecret/${secret.metadata?.name}: Ready=${ready.status}`, detail: ready.message || ready.reason || 'ExternalSecret is not ready' });\n    }\n  }\n\n  return findings.sort((a, b) => severityRank(a.severity) - severityRank(b.severity) || (a.namespace || '').localeCompare(b.namespace || ''));\n}\n\nfunction buildInfo(data) {\n  return [\n    `Events collected: ${normalizeList(data.events).length}`,\n    `Pods collected: ${normalizeList(data.pods).length}`,\n    `Deployments collected: ${normalizeList(data.deployments).length}`,\n    `Jobs collected: ${normalizeList(data.jobs).length}`,\n    `PVCs collected: ${normalizeList(data.pvcs).length}`,\n    `Nodes collected: ${normalizeList(data.nodes).length}`,\n    `Argo applications collected: ${normalizeList(data.argoApplications).length}`,\n    `Certificates collected: ${normalizeList(data.certificates).length}`,\n    `ExternalSecrets collected: ${normalizeList(data.externalSecrets).length}`,\n  ];\n}\n\nfunction renderHtml({ overall, critical, warnings, info }) {\n  const generatedAt = new Date().toISOString();\n  return `<!doctype html>\n<html>\n  <body style=\"font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #172033; line-height: 1.45;\">\n    <h1 style=\"font-size: 22px; margin-bottom: 4px;\">Daily cluster health digest: ${escapeHtml(CONFIG.clusterName)}</h1>\n    <p style=\"margin-top: 0; color: #5f6b7a;\">Generated ${escapeHtml(generatedAt)} over the last ${CONFIG.lookbackHours} hours.</p>\n    <p><strong>Overall:</strong> ${escapeHtml(overall)}</p>\n    ${renderSection('Critical', critical, '#b42318')}\n    ${renderSection('Warnings', warnings, '#b54708')}\n    ${renderList('Collection summary', info)}\n  </body>\n</html>`;\n}\n\nfunction renderSection(title, items, color) {\n  if (!items.length) return `<h2 style=\"font-size: 18px; color: ${color};\">${title}</h2><p>None.</p>`;\n  const rows = items.slice(0, CONFIG.maxItemsPerSection).map((item) => `<li style=\"margin-bottom: 10px;\"><strong>${escapeHtml(item.namespace || 'cluster')} / ${escapeHtml(item.resource || item.title)}</strong><br>${escapeHtml(item.title)}<br><span style=\"color: #5f6b7a;\">${escapeHtml(item.detail || '')}${item.count ? ` Count: ${escapeHtml(String(item.count))}` : ''}</span></li>`).join('');\n  const omitted = items.length > CONFIG.maxItemsPerSection ? `<p>Omitted ${items.length - CONFIG.maxItemsPerSection} additional ${title.toLowerCase()} item(s).</p>` : '';\n  return `<h2 style=\"font-size: 18px; color: ${color};\">${title} (${items.length})</h2><ul>${rows}</ul>${omitted}`;\n}\n\nfunction renderList(title, items) {\n  const rows = items.map((item) => `<li>${escapeHtml(String(item))}</li>`).join('');\n  return `<h2 style=\"font-size: 18px;\">${escapeHtml(title)}</h2><ul>${rows}</ul>`;\n}\n\nfunction unwrapToolResult(result) {\n  if (!result) return [];\n  if (Array.isArray(result)) return result;\n  if (Array.isArray(result.content)) {\n    const text = result.content.filter((item) => item.type === 'text' && typeof item.text === 'string').map((item) => item.text).join('\\n').trim();\n    if (text) return safeJson(text, text);\n  }\n  if (typeof result.result === 'string') return safeJson(result.result, result.result);\n  if (typeof result.output === 'string') return safeJson(result.output, result.output);\n  return result;\n}\n\nfunction normalizeList(value) {\n  if (!value) return [];\n  if (Array.isArray(value)) return value.flatMap((item) => normalizeList(item));\n  if (Array.isArray(value.items)) return value.items;\n  if (Array.isArray(value.resources)) return value.resources;\n  if (Array.isArray(value.data)) return value.data;\n  if (Array.isArray(value.result)) return value.result;\n  return [];\n}\n\nfunction conditionMessage(conditions = []) {\n  if (!Array.isArray(conditions) || conditions.length === 0) return '';\n  return conditions.map((condition) => `${condition.type || 'Condition'}=${condition.status || 'Unknown'} ${condition.reason || ''} ${condition.message || ''}`.trim()).join('; ');\n}\n\nfunction findReadyCondition(resource) {\n  return (resource.status?.conditions || []).find((condition) => condition.type === 'Ready');\n}\n\nfunction compactResource(kind, name) {\n  if (!kind && !name) return 'resource';\n  if (!kind) return name;\n  if (!name) return kind;\n  return `${kind}/${name}`;\n}\n\nfunction severityRank(severity) {\n  return severity === 'critical' ? 0 : severity === 'warning' ? 1 : 2;\n}\n\nfunction safeJson(text, fallback) {\n  try {\n    return JSON.parse(text);\n  } catch (_error) {\n    return fallback;\n  }\n}\n\nfunction escapeHtml(value) {\n  return String(value ?? '').replace(/[&<>\"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' }[char]));\n}\n\nfunction stripHtml(html) {\n  return html.replace(/<style[\\s\\S]*?<\\/style>/gi, '').replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim();\n}\n"
+      },
+      "position": [
+        160,
+        60
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "f6fa7d9d-9e46-48c5-a44e-a16b51ecdf70",
+      "name": "Send Slack digest",
+      "parameters": {
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "contentType": "json",
+        "method": "POST",
+        "options": {},
+        "sendBody": true,
+        "url": "https://hooks.slack.com/services/REPLACE/ME"
+      },
+      "position": [
+        460,
+        60
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "Europe/Copenhagen"
+  },
+  "tags": [
+    {
+      "name": "kubernetes"
+    },
+    {
+      "name": "mcp"
+    },
+    {
+      "name": "daily-digest"
+    }
+  ],
+  "versionId": "cf0430d9-4537-4a0f-a746-6f15ac0787e8"
+}
