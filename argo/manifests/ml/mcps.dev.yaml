@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mcps
+  namespace: argo
+  annotations:
+    argocd-diff-preview/watch-pattern: |
+      argo/charts/ml/mcps/templates/.*,
+      argo/charts/ml/mcps/values.*\.ya?ml,
+      argo/charts/ml/mcps/Chart\.yaml,
+      argo/charts/ml/mcps/Chart\.lock
+spec:
+  project: ml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: mcps
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+  source:
+    repoURL: git@github.com:Sean-FC/playground.git
+    targetRevision: main
+    path: argo/charts/ml/mcps
+    helm:
+      valueFiles:
+        - values.dev.yaml

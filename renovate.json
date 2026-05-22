@@ -284,6 +284,15 @@
       ]
     },
     {
+      "groupName": "chart mcps",
+      "matchFileNames": [
+        "argo/charts/ml/mcps/**"
+      ],
+      "matchManagers": [
+        "helmv3"
+      ]
+    },
+    {
       "groupName": "chart ray",
       "matchFileNames": [
         "argo/charts/ml/ray/**"
