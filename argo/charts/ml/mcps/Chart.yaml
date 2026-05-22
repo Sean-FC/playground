@@ -1,0 +1,11 @@
+apiVersion: v2
+name: mcps
+description: Umbrella chart for MCP servers used by various workloads
+type: application
+version: 0.1.0
+dependencies:
+  - name: kubernetes-mcp-server
+    alias: kubernetes
+    repository: oci://ghcr.io/containers/charts
+    version: 0.1.0
+    condition: kubernetes.enabled

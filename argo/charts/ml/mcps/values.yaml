@@ -1,0 +1,82 @@
+kubernetes:
+  enabled: true
+  fullnameOverride: k8s
+  ingress:
+    enabled: false
+  httpRoute:
+    enabled: false
+  serviceAccount:
+    create: true
+    automountToken: true
+  rbac:
+    create: true
+    extraClusterRoles:
+      - name: node-observer
+        rules:
+          - apiGroups:
+              - ""
+            resources:
+              - nodes/log
+              - nodes/proxy
+              - nodes/stats
+            verbs:
+              - get
+          - apiGroups:
+              - metrics.k8s.io
+            resources:
+              - nodes
+              - pods
+            verbs:
+              - get
+              - list
+    extraClusterRoleBindings:
+      - name: cluster-view
+        roleRef:
+          name: view
+          external: true
+      - name: node-observer
+        roleRef:
+          name: node-observer
+  config:
+    read_only: true
+    disable_destructive: true
+    validation_enabled: true
+    confirmation_fallback: deny
+    cluster_provider_strategy: in-cluster
+    toolsets:
+      - core
+      - config
+    enabled_tools:
+      - configuration_view
+      - events_list
+      - namespaces_list
+      - nodes_log
+      - nodes_stats_summary
+      - nodes_top
+      - pods_get
+      - pods_list
+      - pods_list_in_namespace
+      - pods_log
+      - pods_top
+      - resources_get
+      - resources_list
+    disabled_tools:
+      - helm_install
+      - helm_uninstall
+      - pods_delete
+      - pods_exec
+      - pods_run
+      - resources_create_or_update
+      - resources_delete
+      - resources_scale
+    server_instructions: "This Kubernetes MCP server is read-only. Do not attempt create, update, patch, delete, scale, exec, run, install, or uninstall operations."
+  metrics:
+    serviceMonitor:
+      enabled: true
+      labels:
+        release: monitoring
+      interval: 60s
+  nodeSelector:
+    kubernetes.io/os: linux
+    karpenter.sh/capacity-type: spot
+    node-role.kubernetes.io/cpu: "true"
