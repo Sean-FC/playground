@@ -7,9 +7,9 @@ dependencies:
   version: 6.57.0
 - name: fluent-bit
   repository: https://fluent.github.io/helm-charts
-  version: 0.57.5
+  version: 0.57.6
 - name: tempo
   repository: https://grafana-community.github.io/helm-charts
   version: 2.1.2
-digest: sha256:1f8f56fc6b8be2820108dfa107fed2eb280000197b3f12397fef30a43bfb0dc4
-generated: "2026-05-21T09:11:18.714298559Z"
+digest: sha256:8f43a68ad22a1453e7ff921d947b3dc67aa54752b8dffc09c09a82318805d507
+generated: "2026-05-22T13:38:20.463078794Z"
