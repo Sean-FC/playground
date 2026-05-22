@@ -1,10 +1,42 @@
 airflow:
+  extraEnv: |
+    - name: _PIP_ADDITIONAL_REQUIREMENTS
+      value: "apache-airflow-providers-cncf-kubernetes apache-airflow-providers-amazon"
+  remoteLogging:
+    enabled: true
+    externalSecretName: airflow-remote-logging-env
   scheduler:
     replicas: 1
+    serviceAccount:
+      annotations:
+        eks.amazonaws.com/role-arn: "arn:aws:iam::266294491328:role/dev-aws-airflow"
+  apiServer:
+    replicas: 1
+    serviceAccount:
+      annotations:
+        eks.amazonaws.com/role-arn: "arn:aws:iam::266294491328:role/dev-aws-airflow"
   webserver:
     replicas: 1
+    serviceAccount:
+      annotations:
+        eks.amazonaws.com/role-arn: "arn:aws:iam::266294491328:role/dev-aws-airflow"
   triggerer:
     replicas: 1
+    serviceAccount:
+      annotations:
+        eks.amazonaws.com/role-arn: "arn:aws:iam::266294491328:role/dev-aws-airflow"
+  dagProcessor:
+    replicas: 1
+    serviceAccount:
+      annotations:
+        eks.amazonaws.com/role-arn: "arn:aws:iam::266294491328:role/dev-aws-airflow"
+  pgbouncer:
+    replicas: 1
+  workers:
+    kubernetes:
+      serviceAccount:
+        annotations:
+          eks.amazonaws.com/role-arn: "arn:aws:iam::266294491328:role/dev-aws-airflow"
 airflowExternalSecret:
   parameterStoreKey: /dev/eso/airflow
   postgres:

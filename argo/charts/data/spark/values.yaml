@@ -52,6 +52,7 @@ operator:
   spark:
     jobNamespaces:
       - "spark"
+      - "airflow"
     # Below ignored by mutating webhook; be explicit in namespaces for now
     #jobNamespaceSelector: "spark=true"
     serviceAccount:

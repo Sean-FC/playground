@@ -5,13 +5,37 @@ airflow:
   executor: KubernetesExecutor
   allowPodLaunching: true
   multiNamespaceMode: false
+  nodeSelector:
+    kubernetes.io/os: linux
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: DoesNotExist
+  securityContexts:
+    pod:
+      runAsUser: 50000
+      fsGroup: 0
+    containers:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
   # GitOps installation must disable these
   createUserJob:
     useHelmHooks: false
     applyCustomEnv: false
+    ttlSecondsAfterFinished: 600
+    jobAnnotations:
+      argocd.argoproj.io/sync-wave: "1"
   migrateDatabaseJob:
     useHelmHooks: false
     applyCustomEnv: false
+    ttlSecondsAfterFinished: 600
+    jobAnnotations:
+      argocd.argoproj.io/sync-wave: "1"
   # External Postgres managed by the postgres chart in namespace `postgres`
   postgresql:
     enabled: false
@@ -32,62 +56,275 @@ airflow:
       depth: 1
       subPath: data
       sshKeySecret: airflow-git-ssh
+      knownHosts: |
+        github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+        github.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=
+        github.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCj7ndNxQowgcQnjshcLrqPEiiphnt+VTTvDP6mHBL9j1aNUkY4Ue1gvwnGLVlOhGeYrnZaMgRK6+PKCUXaDbC7qtbW8gIkhL7aGCsOr/C56SJMy/BCZfxd1nWzAOxSDPgVsmerOBYfNqltV9/hWCqBywINIR+5dIg6JTJ72pcEpEjcYgXkE2YEFXV1JHnsKgbLWNlhScqb2UmyRkQyytRLtL+38TGxkxCflmO+5Z8CSSNY7GidjMIZ7Q4zMjA2n1nGrlTDkzwDCsw+wqFPGQA179cnfGWOWRVruj16z6XyvxvjJwbz0wQZ75XK5tKSb7FNyeIEs4TT4jk+S4dhPeAUC5y+bDYirYgM4GC7uEnztnZyaVWQ7B381AK4Qdrwt51ZqExKbQpTUNn+EjqoTwvqNj4kqx5QUCI0ThS/YkOxJCXmPUWZbhjpCg56i+2aB6CmK2JGhn57K5mj0MNdBXA4/WnwH6XoPWJzK5Nyu2zB3nAZp+S5hpQs+p1vN1/wsjk=
       period: 60s
+      recommendedProbeSetting: true
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 250m
+          memory: 256Mi
+  remoteLogging:
+    enabled: false
+    externalSecretName: ""
+    remoteBaseLogFolder: ""
+    remoteLogConnId: aws_default
+    encryptS3Logs: "False"
+  extraEnvFrom: |
+    {{- if .Values.remoteLogging.externalSecretName }}
+    - secretRef:
+        name: {{ .Values.remoteLogging.externalSecretName | quote }}
+    {{- end }}
   scheduler:
-    replicas: 1
+    replicas: 2
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
     podDisruptionBudget:
       enabled: true
       config:
         minAvailable: 1
     resources:
       requests:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 500m
+        memory: 1Gi
       limits:
-        cpu: 100m
-        memory: 128Mi
+        cpu: 1000m
+        memory: 2Gi
+    safeToEvict: false
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            component: scheduler
     serviceAccount:
       create: true
       name: airflow-scheduler
+  apiServer:
+    replicas: 2
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
+    podDisruptionBudget:
+      enabled: true
+      config:
+        minAvailable: 1
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            component: api-server
+    serviceAccount:
+      create: true
+      name: airflow-api-server
   webserver:
+    replicas: 2
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
+    podDisruptionBudget:
+      enabled: true
+      config:
+        minAvailable: 1
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 250m
+        memory: 512Mi
       limits:
-        cpu: 500m
-        memory: 768Mi
+        cpu: 1000m
+        memory: 1Gi
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            component: webserver
+    serviceAccount:
+      create: true
+      name: airflow-webserver
   triggerer:
+    replicas: 2
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
+    podDisruptionBudget:
+      enabled: true
+      config:
+        minAvailable: 1
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 200m
+        memory: 512Mi
       limits:
         cpu: 500m
-        memory: 768Mi
+        memory: 1Gi
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            component: triggerer
+    serviceAccount:
+      create: true
+      name: airflow-triggerer
+  dagProcessor:
+    enabled: true
+    replicas: 2
+    podDisruptionBudget:
+      enabled: true
+      config:
+        minAvailable: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            component: dag-processor
+    serviceAccount:
+      create: true
+      name: airflow-dag-processor
   flower:
     enabled: false
   redis:
     enabled: false
   statsd:
-    enabled: false
+    enabled: true
+    service:
+      extraAnnotations:
+        prometheus.io/path: /metrics
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+  pgbouncer:
+    enabled: true
+    replicas: 2
+    configSecretName: airflow-pgbouncer-config
+    metadataPoolSize: 10
+    resultBackendPoolSize: 5
+    maxClientConn: 100
+    podDisruptionBudget:
+      enabled: true
+      config:
+        minAvailable: 1
+    service:
+      extraAnnotations:
+        prometheus.io/path: /metrics
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    metricsExporterSidecar:
+      statsSecretName: airflow-pgbouncer-stats
+      resources:
+        requests:
+          cpu: 25m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+    topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            component: pgbouncer
+  cleanup:
+    enabled: true
+    schedule: "*/30 * * * *"
+    failedJobsHistoryLimit: 1
+    successfulJobsHistoryLimit: 1
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
+  databaseCleanup:
+    enabled: true
+    schedule: "23 3 * * 0"
+    retentionDays: 90
+    batchSize: 10000
+    skipArchive: false
+    ttlSecondsAfterFinished: 86400
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
   config:
     core:
       load_examples: "False"
     logging:
-      remote_logging: "False"
+      remote_logging: '{{- if and .Values.remoteLogging.enabled .Values.remoteLogging.remoteBaseLogFolder }}True{{ else }}False{{ end }}'
+      remote_base_log_folder: '{{ .Values.remoteLogging.remoteBaseLogFolder }}'
+      remote_log_conn_id: '{{ .Values.remoteLogging.remoteLogConnId }}'
+      encrypt_s3_logs: '{{ .Values.remoteLogging.encryptS3Logs }}'
+    dag_processor:
+      parsing_processes: "4"
+      min_file_process_interval: "60"
+      refresh_interval: "60"
+      file_parsing_sort_mode: modified_time
     kubernetes_executor:
       namespace: "{{ .Release.Namespace }}"
       in_cluster: "True"
       delete_worker_pods: "True"
       delete_worker_pods_on_failure: "False"
-      worker_pods_creation_batch_size: "2"
+      worker_pods_creation_batch_size: "5"
       pod_template_file: "/opt/airflow/pod_templates/pod_template_file.yaml"
   env:
     - name: AIRFLOW_VAR_SPARK_NAMESPACE
       value: spark
   workers:
+    serviceAccount:
+      create: false
+      name: airflow-worker
     kubernetes:
+      safeToEvict: false
+      terminationGracePeriodSeconds: 600
+      serviceAccount:
+        create: true
+        name: airflow-worker
       resources:
         requests:
           cpu: 200m
@@ -97,6 +334,7 @@ airflow:
           memory: 1536Mi
 airflowExternalSecret:
   parameterStoreKey: ""
+  refreshInterval: 24h
   postgres:
     parameterStoreKey: ""
     host: postgres.postgres.svc.cluster.local
@@ -105,5 +343,14 @@ airflowExternalSecret:
     user: platform
 sparkIntegration:
   enabled: true
-  namespace: spark
-  schedulerServiceAccountName: airflow-scheduler
+  namespaces:
+    - spark
+    - airflow
+  serviceAccountNames:
+    - airflow-scheduler
+    - airflow-worker
+serviceMonitor:
+  enabled: true
+  labels:
+    release: monitoring
+  interval: 30s

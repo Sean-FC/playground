@@ -1,0 +1,45 @@
+{{- if and .Values.airflow.enabled .Values.serviceMonitor.enabled }}
+{{- if .Values.airflow.statsd.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: airflow-statsd
+  labels:
+    {{- toYaml .Values.serviceMonitor.labels | nindent 4 }}
+spec:
+  endpoints:
+    - port: statsd-scrape
+      path: /metrics
+      interval: {{ .Values.serviceMonitor.interval }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      tier: airflow
+      component: statsd
+      release: {{ .Release.Name }}
+{{- end }}
+{{- if .Values.airflow.pgbouncer.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: airflow-pgbouncer
+  labels:
+    {{- toYaml .Values.serviceMonitor.labels | nindent 4 }}
+spec:
+  endpoints:
+    - port: pgb-metrics
+      path: /metrics
+      interval: {{ .Values.serviceMonitor.interval }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      tier: airflow
+      component: pgbouncer
+      release: {{ .Release.Name }}
+{{- end }}
+{{- end }}
