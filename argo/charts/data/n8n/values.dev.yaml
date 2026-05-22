@@ -1,0 +1,28 @@
+n8n:
+  main:
+    editorBaseUrl: https://n8n.dev.enervate.io
+    extraEnvVars:
+      N8N_HOST: n8n.dev.enervate.io
+      N8N_PROTOCOL: https
+      N8N_PROXY_HOPS: "1"
+      N8N_HIDE_USAGE_PAGE: "true"
+      N8N_INSTANCE_OWNER_MANAGED_BY_ENV: "true"
+      N8N_INSTANCE_OWNER_FIRST_NAME: Sean
+      N8N_INSTANCE_OWNER_LAST_NAME: Campbell
+  webhook:
+    url: https://n8n.dev.enervate.io/
+externalSecret:
+  enabled: true
+  remoteRef:
+    key: "/dev/eso/n8n"
+httpRoute:
+  enabled: true
+  name: n8n
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: traefik-gateway
+      namespace: traefik
+      sectionName: websecure
+  hostnames:
+    - n8n.dev.enervate.io

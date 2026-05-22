@@ -248,9 +248,9 @@
       ]
     },
     {
-      "groupName": "chart prefect",
+      "groupName": "chart n8n",
       "matchFileNames": [
-        "argo/charts/data/prefect/**"
+        "argo/charts/data/n8n/**"
       ],
       "matchManagers": [
         "helmv3"

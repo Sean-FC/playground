@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: n8n
+  namespace: argo
+  annotations:
+    argocd-diff-preview/watch-pattern: |
+      argo/charts/data/n8n/templates/.*,
+      argo/charts/data/n8n/values.*\.ya?ml,
+      argo/charts/data/n8n/Chart\.yaml,
+      argo/charts/data/n8n/Chart\.lock
+spec:
+  project: data
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: n8n
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    managedNamespaceMetadata:
+      labels:
+        postgres: "true"
+        terminable: "true"
+  source:
+    repoURL: git@github.com:Sean-FC/playground.git
+    targetRevision: main
+    path: argo/charts/data/n8n
+    helm:
+      valueFiles:
+        - values.dev.yaml
