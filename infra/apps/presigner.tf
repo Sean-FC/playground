@@ -81,7 +81,7 @@ resource "aws_iam_role_policy_attachment" "presigner" {
 
 
 module "presigner_bucket" {
-  source  = "git::https://github.com/cloudposse/terraform-aws-s3-bucket.git?ref=tags/v4.11.0"
+  source  = "git::https://github.com/cloudposse/terraform-aws-s3-bucket.git?ref=v4.13.0"
   context = module.context
 
   bucket_name = join(module.context.delimiter, ["seanfc", module.context.id, local.presigner.name])
