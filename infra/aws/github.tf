@@ -22,6 +22,18 @@ resource "github_actions_secret" "argocd_diff_preview_ssh_key" {
   plaintext_value = tls_private_key.argocd_deploy_key.private_key_openssh
 }
 
+resource "github_actions_secret" "labeler_client_id" {
+  repository      = local.github.repo
+  secret_name     = "LABELER_CLIENT_ID"
+  plaintext_value = local.secrets_main.labeler.github.client_id
+}
+
+resource "github_actions_secret" "labeler_app_pem" {
+  repository      = local.github.repo
+  secret_name     = "LABELER_APP_PRIVATE_KEY"
+  plaintext_value = local.secrets_main.labeler.github.app_pem
+}
+
 resource "aws_ssm_parameter" "github_actions_runners" {
   name = "/${module.context.stage}/eso/github-actions-runners"
   type = "SecureString"
