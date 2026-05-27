@@ -98,7 +98,7 @@ resource "aws_key_pair" "fct_nat" {
 
 module "fck_nat" {
   count  = var.enable_nat ? 1 : 0
-  source = "git::https://github.com/RaJiska/terraform-aws-fck-nat?ref=tags/v1.4.0"
+  source = "git::https://github.com/RaJiska/terraform-aws-fck-nat?ref=v1.5.0"
 
   name          = join(module.context.delimiter, [module.context.id, "fck", "nat"])
   vpc_id        = aws_vpc.main.id
